@@ -1,161 +1,119 @@
-# 🏠 HomiePlace
+﻿# HomiePlace
 
-> **Find a place with your homies** — A modern full-stack web application designed for shared housing, room finding, and roommate collaboration with real-time messaging.
+> Find a place with your homies.
 
----
+HomiePlace is a full-stack web application for shared housing, room finding, and roommate collaboration. The project aims to help people find a place to live and connect with the people they share it with.
 
-## 🚀 Tech Stack
+## Tech stack
 
-### Frontend (`client/`)
-- **Framework**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- **Bundler & Tooling**: [Vite](https://vitejs.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) (`@tailwindcss/vite`)
-- **Routing**: [React Router DOM v7](https://reactrouter.com/)
-- **Linting**: ESLint
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite 8 |
+| Styling | Tailwind CSS v4 |
+| Routing | React Router DOM v7 |
+| Backend | Node.js, TypeScript, Express 5, ES modules |
+| Database | MongoDB with Mongoose |
+| Development tools | npm, ESLint, Nodemon |
 
-### Backend (`server/`)
-- **Runtime**: [Node.js](https://nodejs.org/) (ES Modules)
-- **Framework**: [Express 5](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/)
-- **Real-Time Communication**: [Socket.io](https://socket.io/)
-- **Authentication**: JWT ([jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)) & [bcryptjs](https://github.com/dcodeIO/bcrypt.js)
-- **Media Uploads**: [Multer](https://github.com/expressjs/multer), [Streamifier](https://github.com/epeli/node-streamifier), & [Cloudinary](https://cloudinary.com/)
-
----
-
-## 📁 Project Structure
+## Project structure
 
 ```text
 HomiePlace/
-├── client/                     # Frontend (React 19 + TypeScript + Vite + Tailwind v4)
-│   ├── public/                 # Static public assets
-│   ├── src/
-│   │   ├── assets/             # Images and visual resources
-│   │   ├── components/         # Reusable UI components
-│   │   ├── pages/              # Page views
-│   │   ├── context/            # React context providers (Auth, Socket)
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── services/           # API and HTTP service helpers
-│   │   ├── types/              # TypeScript declarations
-│   │   ├── App.tsx             # Root component & routing
-│   │   ├── index.css           # Global Tailwind CSS
-│   │   └── main.tsx            # Application entry point
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── server/                     # Backend (Node.js ESM + Express 5 + Socket.io + MongoDB)
-│   ├── config/                 # Database & Cloudinary configurations
-│   ├── controllers/            # Route handlers & business logic
-│   ├── middlewares/            # Auth JWT, error handling, Multer upload
-│   ├── models/                 # Mongoose schemas
-│   ├── routes/                 # Express API endpoints
-│   ├── sockets/                # Real-time Socket.io event listeners
-│   ├── server.js               # Express application entry point
-│   └── package.json
-│
-├── .agent/                     # AI assistant instructions & architecture docs
-├── AGENTS.md                   # Universal AI agent guidelines
-├── .gitignore                  # Monorepo ignore rules
-└── README.md                   # Project documentation
+  client/              React frontend
+    public/            Public assets
+    src/               Application source and styles
+  server/              Express backend
+    config/            Database configuration
+    controller/        Request handlers and related types
+    models/            Mongoose schemas
+    server.ts          Server entry point
+  .agent/              Architecture, coding standards, and workflows
+  AGENTS.md            AI contributor instructions
+  CLAUDE.md            Claude instructions
 ```
 
----
+The client and server are separate npm packages, each with its own dependencies and lockfile. Run package commands from the corresponding directory.
 
-## 🛠️ Getting Started
+## Getting started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- [MongoDB](https://www.mongodb.com/) (Local instance or MongoDB Atlas)
-- npm or yarn
 
----
+- Node.js 22.13+ on the 22.x release line, or Node.js 24+.
+- npm.
+- A local MongoDB instance or a MongoDB Atlas connection URI.
 
-### 1. Clone & Setup
+### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Kruskal892/HomiePlace.git
 cd HomiePlace
 ```
 
----
+### 2. Set up the server
 
-### 2. Backend Setup (`server/`)
+```bash
+cd server
+npm ci
+```
 
-1. Navigate to the server folder and install dependencies:
-   ```bash
-   cd server
-   npm install
-   ```
+Create a `.env` file in `server/` and add your MongoDB connection URI:
 
-2. Create an environment file `.env` inside `server/`:
-   ```env
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/homieplace
-   JWT_SECRET=your_jwt_secret_key_here
-   CLIENT_URL=http://localhost:5173
+```dotenv
+MONGO_URI=mongodb://127.0.0.1:27017/homieplace
+```
 
-   # Cloudinary (Optional, for image uploads)
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   ```
+For MongoDB Atlas, replace the local URI with your cluster connection string. Keep credentials in your local environment file.
 
-3. Start the backend development server:
-   ```bash
-   npm start
-   ```
-   The backend will be running at `http://localhost:5000`.
+Start the server:
 
----
+```bash
+npm start
+```
 
-### 3. Frontend Setup (`client/`)
+The backend runs at `http://localhost:5000`. MongoDB must be reachable before the server starts listening.
 
-1. Open a new terminal, navigate to the client folder and install dependencies:
-   ```bash
-   cd client
-   npm install
-   ```
+### 3. Set up the client
 
-2. Create an environment file `.env` inside `client/`:
-   ```env
-   VITE_API_BASE_URL=http://localhost:5000/api
-   VITE_SOCKET_URL=http://localhost:5000
-   ```
+Open a second terminal at the repository root:
 
-3. Start the frontend development server:
-   ```bash
-   npm run dev
-   ```
-   The frontend will be accessible at `http://localhost:5173`.
+```bash
+cd client
+npm ci
+npm run dev
+```
 
----
+Open the URL printed by Vite, normally `http://localhost:5173`. No client environment configuration is required for local startup.
 
-## 📜 Available Scripts
+## Available scripts
 
-### Client (`client/`)
+### Client
+
+Run these commands from `client/`:
+
 | Command | Description |
-| :--- | :--- |
-| `npm run dev` | Runs the Vite development server with HMR |
-| `npm run build` | Typechecks with `tsc` and compiles production assets |
-| `npm run preview` | Locally previews production build |
-| `npm run lint` | Runs ESLint to check for code quality issues |
+| --- | --- |
+| `npm run dev` | Start the development server with hot reload |
+| `npm run build` | Check TypeScript and create a production build in `dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
 
-### Server (`server/`)
+### Server
+
+Run this command from `server/`:
+
 | Command | Description |
-| :--- | :--- |
-| `npm start` | Runs the Express server with Nodemon auto-restart |
+| --- | --- |
+| `npm start` | Run the TypeScript server with Nodemon auto-restart |
 
----
+## Contributing
 
-## 🤖 AI Agent & Contributor Guidelines
+Keep frontend changes in `client/` and backend changes in `server/`. Follow the project conventions and include clear verification steps with your changes. Never commit dependencies, local environment files, credentials, or generated build output.
 
-This repository contains preloaded guidelines for AI coding assistants (ChatGPT, Claude, Cursor, Copilot, Gemini):
-- Master rules are located in [`.agent/README.md`](.agent/README.md)
-- Universal agent entry point: [`AGENTS.md`](AGENTS.md)
-- Never commit `node_modules` or `.env` credential files.
+Read the following guides before contributing:
 
----
+- [Client guide](client/README.md)
+- [Architecture](.agent/architecture.md)
+- [Coding standards](.agent/coding-standards.md)
+- [Development workflows](.agent/workflows.md)
 
-## 📄 License
-
-This project is licensed under the ISC License.
+AI coding assistants should also read [AGENTS.md](AGENTS.md) and the [agent guidelines](.agent/README.md).

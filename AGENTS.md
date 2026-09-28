@@ -1,22 +1,18 @@
-# HomiePlace Agent Instructions
+# HomiePlace agent instructions
 
-This repository contains full-stack code for **HomiePlace**:
+Read these guides before proposing or changing code:
 
-- **Client**: `client/` (React 19, TypeScript, Vite, Tailwind CSS v4)
-- **Server**: `server/` (Node.js ESM, Express 5, MongoDB / Mongoose, Socket.io)
+- [Overview and golden rules](.agent/README.md)
+- [Architecture and implementation status](.agent/architecture.md)
+- [Coding standards](.agent/coding-standards.md)
+- [Workflows and environment](.agent/workflows.md)
 
-## 🚨 Instructions for All AI Agents (ChatGPT, Claude, Cursor, Copilot, Gemini)
+## Current baseline and constraints
 
-Before proposing or generating any code changes, **YOU MUST** read and adhere to the guidelines in the [`.agent/`](.agent/) directory:
-
-- 📖 **Overview & Golden Rules**: [.agent/README.md](.agent/README.md)
-- 🏗️ **Architecture & Directory Structure**: [.agent/architecture.md](.agent/architecture.md)
-- 💻 **Coding Standards (Client & Server)**: [.agent/coding-standards.md](.agent/coding-standards.md)
-- 🚀 **Workflows, Environment Variables & Git**: [.agent/workflows.md](.agent/workflows.md)
-
-### Strict Requirements:
-
-1. **Never commit or stage `node_modules` or `.env` files.**
-2. **Server uses ES Modules (`import`/`export`), never CommonJS `require()`.**
-3. **Client is strictly typed with TypeScript. Do not use `any`.**
-4. **Always respect the separation between `client/` and `server/`.**
+- Client: React 19, TypeScript, Vite 8, Tailwind v4, and BrowserRouter around a placeholder.
+- Server: TypeScript executed directly by Node.js, ESM, Express 5, and Mongoose. The entry is `server/server.ts`; only `GET /` is mounted.
+- Registration under `server/controller/` is unfinished and unmounted. Socket.io, JWT, and upload dependencies are not integrated.
+- Use TypeScript and import/export; never CommonJS or client `any`.
+- Keep client/server code and npm commands within their respective packages.
+- Never stage or commit node_modules, local environment files, credentials, or build output.
+- Do not run lint or build unless explicitly requested. Never claim unperformed checks passed.

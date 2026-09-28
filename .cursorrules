@@ -1,14 +1,18 @@
-You are an expert full-stack developer working on HomiePlace.
+# Cursor instructions for HomiePlace
 
-Follow all instructions in `.agent/`:
+Read these guides before proposing or changing code:
 
-- Read `.agent/README.md` for project overview and golden rules.
-- Read `.agent/architecture.md` for architecture and directory structure.
-- Read `.agent/coding-standards.md` for React 19, TypeScript, Express 5, and Mongoose standards.
-- Read `.agent/workflows.md` for scripts and git commit standards.
+- [Overview and golden rules](.agent/README.md)
+- [Architecture and implementation status](.agent/architecture.md)
+- [Coding standards](.agent/coding-standards.md)
+- [Workflows and environment](.agent/workflows.md)
 
-Core Rules:
+## Current baseline and constraints
 
-1. Client: React 19 + TypeScript + Vite + Tailwind CSS v4. No `any` types.
-2. Server: Node.js ES Modules (`import`/`export`), Express 5, Mongoose, Socket.io.
-3. Security: Never stage or suggest hardcoding secrets or `.env` files. Ensure `node_modules/` is never committed.
+- Client: React 19, TypeScript, Vite 8, Tailwind v4, and BrowserRouter around a placeholder.
+- Server: TypeScript executed directly by Node.js, ESM, Express 5, and Mongoose. The entry is `server/server.ts`; only `GET /` is mounted.
+- Registration under `server/controller/` is unfinished and unmounted. Socket.io, JWT, and upload dependencies are not integrated.
+- Use TypeScript and import/export; never CommonJS or client `any`.
+- Keep client/server code and npm commands within their respective packages.
+- Never stage or commit node_modules, local environment files, credentials, or build output.
+- Do not run lint or build unless explicitly requested. Never claim unperformed checks passed.

@@ -1,18 +1,18 @@
-# Claude Instructions for HomiePlace
+# Claude instructions for HomiePlace
 
-Welcome Claude! You are working on the **HomiePlace** full-stack repository.
+Read these guides before proposing or changing code:
 
-## Preloaded Guidelines
+- [Overview and golden rules](.agent/README.md)
+- [Architecture and implementation status](.agent/architecture.md)
+- [Coding standards](.agent/coding-standards.md)
+- [Workflows and environment](.agent/workflows.md)
 
-Before making modifications or answering implementation questions, review and follow the instructions in the [`.agent/`](.agent/) directory:
+## Current baseline and constraints
 
-- [.agent/README.md](.agent/README.md) - Golden rules & quick reference
-- [.agent/architecture.md](.agent/architecture.md) - Monorepo architecture & networking
-- [.agent/coding-standards.md](.agent/coding-standards.md) - React 19, TypeScript, Express 5, Mongoose rules
-- [.agent/workflows.md](.agent/workflows.md) - Scripts, env variables, git commit guidelines
-
-## Key Constraints
-
-- Never commit `node_modules` or `.env` files.
-- Client (`client/`) runs on Vite + React 19 + TypeScript + Tailwind v4.
-- Server (`server/`) is Node.js ESM (`"type": "module"`) + Express 5 + MongoDB.
+- Client: React 19, TypeScript, Vite 8, Tailwind v4, and BrowserRouter around a placeholder.
+- Server: TypeScript executed directly by Node.js, ESM, Express 5, and Mongoose. The entry is `server/server.ts`; only `GET /` is mounted.
+- Registration under `server/controller/` is unfinished and unmounted. Socket.io, JWT, and upload dependencies are not integrated.
+- Use TypeScript and import/export; never CommonJS or client `any`.
+- Keep client/server code and npm commands within their respective packages.
+- Never stage or commit node_modules, local environment files, credentials, or build output.
+- Do not run lint or build unless explicitly requested. Never claim unperformed checks passed.

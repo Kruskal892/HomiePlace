@@ -1,75 +1,37 @@
-# React + TypeScript + Vite
+# HomiePlace client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite 8 + Tailwind CSS v4. The frontend is currently a scaffold.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Use Node.js 22.13+ on the 22.x line, or Node.js 24+. From this directory:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Open Vite's printed URL, normally `http://localhost:5173`. No environment variables are consumed and no backend requests are made.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Source map
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `src/main.tsx` mounts `App` inside `BrowserRouter`.
+- `src/App.tsx` displays "App" with `text-red-300`.
+- `src/index.css` imports Tailwind using `@import "tailwindcss";`.
+- `vite.config.ts` enables React and Tailwind plugins; no proxy or custom port is configured.
+- `src/assets/` and `public/` contain starter assets.
 
-```
+No route definitions, pages, contexts, hooks, services, or shared types directories exist yet. Add structure only when needed.
+
+## Scripts and checks
+
+| Command | Behavior |
+| --- | --- |
+| `npm run dev` | Start Vite with HMR |
+| `npm run build` | Run `tsc -b`, then build into `dist/` |
+| `npm run lint` | Run ESLint |
+| `npm run preview` | Serve an existing production build |
+
+There is no test script. ESLint includes JavaScript, TypeScript, React Hooks, and React Refresh recommended configurations. The app TypeScript config checks unused locals/parameters and erasable syntax but does not explicitly enable `strict`. Project rules still prohibit `any`.
+
+Follow [AGENTS.md](../AGENTS.md) and the [.agent guides](../.agent/README.md). Agents must not run lint or build unless explicitly requested.

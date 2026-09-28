@@ -1,62 +1,55 @@
-# Workflows & Git Guidelines
+# HomiePlace workflows
 
-## 1. Running the Project
+## Setup
 
-### Client (Frontend)
+Use Node.js 22.13+ on the 22.x line, or Node.js 24+, npm, and MongoDB. The server requires native TypeScript stripping; Vite and ESLint also require a modern Node version.
 
-```bash
-# In client/
-npm install
-npm run dev        # Starts Vite dev server on http://localhost:5173
-npm run build      # Typechecks and builds for production
-npm run lint       # Runs ESLint
-```
-
-### Server (Backend)
+From `client/`:
 
 ```bash
-# In server/
-npm install
-npm start          # Starts server with nodemon on http://localhost:5000
+npm ci
+npm run dev
 ```
 
----
+From `server/`, in another terminal:
 
-## 2. Environment Variables
-
-### Security Rule
-
-- **NEVER** commit `.env` files.
-- Always provide template variables in `.env.example` in both `client/` and `server/`.
-
-### Server Variables (`server/.env.example`)
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/homieplace
-JWT_SECRET=your_jwt_secret_key_here
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-CLIENT_URL=http://localhost:5173
+```bash
+npm ci
+npm start
 ```
 
-### Client Variables (`client/.env.example`)
+Packages have separate manifests and lockfiles. There is no root npm runner. Vite normally uses port 5173; the server uses hardcoded port 5000 after MongoDB connects.
 
-```env
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_SOCKET_URL=http://localhost:5000
+## Environment
+
+Create `server/.env` locally:
+
+```dotenv
+MONGO_URI=mongodb://127.0.0.1:27017/homieplace
 ```
 
----
+The entry loads dotenv. The database helper requires `MONGO_URI`, not `MONGODB_URI`. No other environment variable is currently consumed by application source. PORT, CLIENT_URL, JWT/Cloudinary settings, and client VITE_* settings are not wired up.
 
-## 3. Git Commit Rules
+Neither package includes an `.env.example`. Do not instruct contributors to copy a nonexistent template. When adding configuration, document its real consumer and provide placeholder-only examples where appropriate. Never commit local environment files or secrets.
 
-- **Format**: `<type>: <short description>`
-  - `feat: add user authentication controller and routes`
-  - `fix: resolve socket reconnection issue on page refresh`
-  - `refactor: extract navbar into reusable component`
-  - `chore: update dependencies`
-- **Verification before commit**:
-  - Check `git status` to ensure only intended files are staged.
-  - Verify that no `node_modules/`, `.env`, or build artifacts (`dist/`) are staged.
+## Commands and verification
+
+| Directory | Command | Behavior |
+| --- | --- | --- |
+| client | `npm run dev` | Vite development server |
+| client | `npm run build` | TypeScript project checks, then Vite build |
+| client | `npm run lint` | ESLint |
+| client | `npm run preview` | Preview previously built assets |
+| server | `npm start` | Nodemon watches ts/js/json and executes `node --experimental-strip-types server.ts` |
+
+**Do not run lint or build unless explicitly requested.** Listing commands is not authorization to execute them. Neither package has a test script; the server has no build, lint, or typecheck script.
+
+For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. There is no registration endpoint to test yet.
+
+## Git and review
+
+- Inspect branch, status, and diff before editing. Preserve unrelated user changes.
+- Prefer `<type>: <short description>` commit messages.
+- Stage only intended files when requested; never stage dependencies, environment files, secrets, or generated output.
+- When refreshing docs against main, check the remote revision where accessible and disclose if it cannot be verified.
+- MR descriptions must explain actual changes and reproducible test steps. Use only known tickets and evidence. Mark verification complete only when performed; never invent lint/build/test results.

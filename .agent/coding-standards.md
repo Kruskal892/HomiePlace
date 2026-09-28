@@ -1,54 +1,28 @@
-# Coding Standards & Best Practices
+# HomiePlace coding standards
 
-## 1. Frontend Standards (`client/`)
+These are implementation rules, not claims that every feature exists. See [architecture](architecture.md) for the current baseline.
 
-### TypeScript & React
+## Client
 
-- **React 19**: Use modern functional components with hooks (`useState`, `useEffect`, `useCallback`, `useMemo`).
-- **Strict Typing**:
-  - Always define TypeScript types/interfaces for component props, state, and API responses in `src/types/`.
-  - Avoid `any`. Use `unknown` with type guards if types are unpredictable.
-- **Component Design**:
-  - Keep components modular, focused, and organized by feature or shared UI elements.
-  - Colocate component-specific styles and subcomponents when appropriate.
-- **State Management**:
-  - Use React Context for global state (e.g., authenticated user, socket instance).
-  - Use local state for UI-specific transient state (e.g., modal open/close, form inputs).
+- Use functional React components and typed props/state. Never use `any`; narrow `unknown` when needed.
+- Keep feature-specific types near consumers. Add shared directories only when there is a shared need.
+- Use local state by default and context when state needs sharing.
+- Keep client code in `client/`; reuse the existing BrowserRouter when adding routes.
+- Use Tailwind v4 through the existing CSS import and Vite plugin. Preserve accessibility and mobile-first layouts.
+- If Tailwind Variants is introduced, reserve slots for customizable or variant-controlled classes. Keep static structure, animation, transitions, and interaction classes in JSX. It is not currently installed.
+- Match surrounding style. The app TypeScript config does not explicitly enable strict mode; the no-any rule still applies.
 
-### Styling & Tailwind CSS v4
+## Server
 
-- **Tailwind v4**: Styles are configured via `@tailwindcss/vite` in `vite.config.ts`.
-- **Utility-First**: Use Tailwind utility classes directly in JSX.
-- **Responsive Design**: Mobile-first design pattern (`block md:flex`, `p-4 md:p-8`).
+- Use TypeScript and ESM imports/exports, never CommonJS require.
+- Node runs TypeScript directly with type stripping. Use erasable syntax, explicit `.ts` extensions for relative runtime imports, and `import type` for types.
+- Keep handlers in the existing `server/controller/`, models in `server/models/`, and configuration in `server/config/`.
+- Add route/middleware files only when needed and mount them explicitly. Exporting a handler does not expose an endpoint.
+- Type request/response bodies, validate input at runtime, and respond on every handled success/error path.
+- Use async/await and handle expected errors without exposing secrets. Express 5 forwards rejected handler promises, but no centralized application error middleware currently exists.
+- Preserve database constraints and timestamps. Handle duplicate-key races; a pre-insert email lookup alone does not guarantee uniqueness.
+- Hash passwords with bcrypt. Enforce roles and approval permissions server-side before exposing registration. Public input must not grant privileged roles.
+- Complete secure token generation, expiry, delivery, and verification before exposing token workflows. The current Math.random token is unfinished groundwork.
+- Native type stripping is not typechecking. Starting the server does not verify server type safety.
 
----
-
-## 2. Backend Standards (`server/`)
-
-### Node.js & Express 5
-
-- **ES Modules**: Always use `import` and `export` statements (`"type": "module"`). Do NOT use CommonJS `require()`.
-- **Layered Architecture**:
-  - **Routes**: Define endpoints and mount middlewares.
-  - **Controllers**: Handle request extraction, orchestrate operations, and send JSON responses.
-  - **Models**: Define Mongoose schemas with proper validations, indexes, and defaults.
-  - **Middlewares**: Reusable cross-cutting concerns (auth JWT, error handling, rate limiting).
-- **Asynchronous Code & Error Handling**:
-  - Use `async/await` for asynchronous code.
-  - Express 5 automatically handles rejected promises from async route handlers, but controllers should still handle specific errors or pass them via `next(err)`.
-  - Maintain a centralized error-handling middleware at the bottom of the middleware stack.
-
-### Database (Mongoose / MongoDB)
-
-- Define strict schemas with timestamps (`{ timestamps: true }`).
-- Index frequently queried fields (e.g., `email`, `userId`, `createdAt`).
-- Sanitize inputs to prevent NoSQL injection.
-
-### Real-time Communication (Socket.io)
-
-- Handle connection, disconnection, and authentication on socket events cleanly.
-- Organize socket handlers by feature inside `server/sockets/`.
-
-### File Uploads & Cloudinary
-
-- Use `multer` memory storage together with `streamifier` to stream upload buffers directly to Cloudinary without persisting temporary files to disk.
+Authentication, sockets, and uploads are not implemented. When adding them, enforce authorization at their trust boundaries and reuse installed dependencies where suitable.

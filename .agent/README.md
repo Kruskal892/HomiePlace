@@ -1,48 +1,28 @@
-# HomiePlace Agent Guidelines
+# HomiePlace agent guidelines
 
-Welcome to **HomiePlace**. This directory contains preload instructions, architecture context, and coding rules that ALL AI coding assistants (ChatGPT, Claude, Cursor, GitHub Copilot, Gemini, etc.) must follow.
+Read this overview and all three guides before proposing or changing code.
 
----
+## Current baseline
 
-## 📌 Quick Reference
+- `client/`: React 19, TypeScript, Vite 8, Tailwind v4, and React Router v7. BrowserRouter wraps a placeholder.
+- `server/`: TypeScript, Node ESM, Express 5, and Mongoose 9. Only `GET /` is mounted.
+- Registration model/types/controller exist, but registration is not an exposed or complete API.
+- Socket.io, JWT, and upload dependencies are installed, not integrated.
+- Each package has its own npm manifest and lockfile; there is no root package runner.
 
-- **Project Type**: Full-stack application (Monorepo)
-- **Client**: `client/` — React 19, TypeScript, Vite, Tailwind CSS v4, React Router DOM v7
-- **Server**: `server/` — Node.js (ESM), Express 5, Mongoose (MongoDB), Socket.io, JWT, Cloudinary
-- **Package Manager**: npm
+## Required guides
 
----
+1. [Architecture](architecture.md): actual files, data flow, and implementation gaps.
+2. [Coding standards](coding-standards.md): client/server conventions and security boundaries.
+3. [Workflows](workflows.md): commands, environment variables, and verification.
 
-## 📚 Core Documents
+## Golden rules
 
-Before making any changes, consult the relevant guides:
-
-1. **[Architecture & Structure](architecture.md)**: Repository layout, tech stack, data flow, and port configurations.
-2. **[Coding Standards](coding-standards.md)**: TypeScript/React rules, Tailwind CSS v4 usage, Express/MongoDB patterns, and error handling.
-3. **[Workflows & Git](workflows.md)**: Running dev servers, handling environment variables, Git commit rules, and security.
-
----
-
-## ⚠️ Golden Rules for All Agents
-
-1. **Never commit or stage sensitive files**:
-   - Never stage `node_modules/`, `.env`, or credential keys.
-   - Always ensure changes respect [.gitignore](../.gitignore).
-
-2. **Respect the Monorepo Boundaries**:
-   - `client` commands (`npm run dev`, `npm run build`) must run within `client/`.
-   - `server` commands (`npm start`) must run within `server/`.
-   - Client and server have independent `package.json` files; do not install frontend dependencies into `server/` or backend dependencies into `client/`.
-
-3. **Modern ES Modules & Types**:
-   - Server uses `"type": "module"` with modern `import` / `export` syntax.
-   - Client is strictly TypeScript. Avoid `any` types; prefer strict interfaces and type definitions.
-
-4. **Style & UI Standards**:
-   - Client uses Tailwind CSS v4 (`@tailwindcss/vite`).
-   - Keep markup clean, accessible, and responsive (mobile-first).
-
-5. **Security & Validation**:
-   - Never trust client input: validate request bodies in Express routes.
-   - Protect sensitive routes with JWT authentication middleware.
-   - Store passwords hashed using `bcryptjs`.
+1. Never stage or commit dependencies, local environment files, credentials, or generated output. Respect [.gitignore](../.gitignore).
+2. Run commands in the appropriate package and keep client/server dependencies separate.
+3. Use TypeScript and ES module imports/exports. Do not introduce CommonJS or client `any` types.
+4. Reuse existing code; add directories and abstractions only when needed.
+5. Validate untrusted input at runtime. Request types do not validate HTTP bodies. Hash passwords and enforce authorization server-side.
+6. Keep UI accessible, responsive, and consistent with the existing Tailwind v4 setup.
+7. Do not run lint or build unless explicitly requested. Report only checks actually performed.
+8. Distinguish installed dependencies, unfinished code, and working features.
