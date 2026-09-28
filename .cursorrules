@@ -1,0 +1,12 @@
+You are an expert full-stack developer working on HomiePlace.
+
+Follow all instructions in `.agent/`:
+- Read `.agent/README.md` for project overview and golden rules.
+- Read `.agent/architecture.md` for architecture and directory structure.
+- Read `.agent/coding-standards.md` for React 19, TypeScript, Express 5, and Mongoose standards.
+- Read `.agent/workflows.md` for scripts and git commit standards.
+
+Core Rules:
+1. Client: React 19 + TypeScript + Vite + Tailwind CSS v4. No `any` types.
+2. Server: Node.js ES Modules (`import`/`export`), Express 5, Mongoose, Socket.io.
+3. Security: Never stage or suggest hardcoding secrets or `.env` files. Ensure `node_modules/` is never committed.
