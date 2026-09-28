@@ -3,6 +3,7 @@
 ## 1. Running the Project
 
 ### Client (Frontend)
+
 ```bash
 # In client/
 npm install
@@ -12,6 +13,7 @@ npm run lint       # Runs ESLint
 ```
 
 ### Server (Backend)
+
 ```bash
 # In server/
 npm install
@@ -23,10 +25,12 @@ npm start          # Starts server with nodemon on http://localhost:5000
 ## 2. Environment Variables
 
 ### Security Rule
+
 - **NEVER** commit `.env` files.
 - Always provide template variables in `.env.example` in both `client/` and `server/`.
 
 ### Server Variables (`server/.env.example`)
+
 ```env
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/homieplace
@@ -38,6 +42,7 @@ CLIENT_URL=http://localhost:5173
 ```
 
 ### Client Variables (`client/.env.example`)
+
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
