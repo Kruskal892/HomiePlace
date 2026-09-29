@@ -5,7 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon --watch . --ext ts,js,json --exec \"node --experimental-strip-types\" server.ts"
+    "start": "nodemon --watch . --ext ts,js,json --exec \"node --experimental-strip-types\" server.ts",
+    "dev": "nodemon --watch . --ext ts,js,json --exec \"node --experimental-strip-types\" server.ts"
   },
   "author": "Minhnda",
   "license": "ISC",
