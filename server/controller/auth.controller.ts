@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import User from "../models/user.model";
 import type { RegisterRequestBody, RegisterResponseBody } from "./auth.types";
 import bycrypt from "bcryptjs";
+import sendEmail from "../utils/sendEmail";
+import { verificationEmailTemplate } from "../utils/emailTemplates";
 
 //Register a new user
 export const registerUser = async (req: Request<{}, {}, RegisterRequestBody>, res: Response<RegisterResponseBody>): Promise<Response | void> => {
@@ -23,6 +25,26 @@ export const registerUser = async (req: Request<{}, {}, RegisterRequestBody>, re
       role,
       isApproved: role === "manager" ? false : true,
       verificationToken,
+    });
+
+    try {
+      await sendEmail({
+        to: email,
+        subject: "HomiePlace — Verify Your Email",
+        html: verificationEmailTemplate(name, verificationToken),
+      });
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      return res.status(500).json({ message: "Error sending verification email" });
+    }
+
+    return res.status(201).json({
+      message: "User registered. Please check your email for verification.",
+      user: {
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });

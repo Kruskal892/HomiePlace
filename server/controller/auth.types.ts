@@ -8,4 +8,9 @@ export interface RegisterRequestBody {
 
 export interface RegisterResponseBody {
   message: string;
+  user?: {
+    email: string;
+    name: string;
+    role: string;
+  };
 }
