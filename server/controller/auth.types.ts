@@ -1,3 +1,9 @@
+import type { Request } from "express";
+
+export interface AuthenticatedRequest extends Request {
+  user?: { id: string };
+}
+
 export interface RegisterRequestBody {
   name: string;
   email: string;
