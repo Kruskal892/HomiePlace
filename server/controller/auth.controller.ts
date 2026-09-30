@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
+import bycrypt from "bcryptjs";
 import type { Request, Response } from "express";
 import User from "../models/user.model";
-import type { LoginRequestBody, LoginResponseBody, RegisterRequestBody, RegisterResponseBody } from "./auth.types";
-import bycrypt from "bcryptjs";
 import sendEmail from "../utils/sendEmail";
 import { verificationEmailTemplate } from "../utils/emailTemplates";
+import type { AuthenticatedRequest, LoginRequestBody, LoginResponseBody, RegisterRequestBody, RegisterResponseBody } from "./auth.types";
 
 //Register a new user
 export const registerUser = async (req: Request<{}, {}, RegisterRequestBody>, res: Response<RegisterResponseBody>): Promise<Response | void> => {
@@ -52,6 +52,7 @@ export const registerUser = async (req: Request<{}, {}, RegisterRequestBody>, re
   }
 };
 
+// Login a user
 export const loginUser = async (req: Request<{}, {}, LoginRequestBody>, res: Response<LoginResponseBody>): Promise<Response | void> => {
   try {
     const { email, password } = req.body;
@@ -83,6 +84,45 @@ export const loginUser = async (req: Request<{}, {}, LoginRequestBody>, res: Res
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: "1h" });
 
     return res.status(200).json({ message: "Login successful", token });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get user profile
+export const getUserProfile = async (req: AuthenticatedRequest, res: Response): Promise<Response | void> => {
+  try {
+    const user = await User.findById(req.user?.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ success: true, user });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Verify Email
+export const verifyEmail = async (req: Request, res: Response): Promise<Response | void> => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: "Email is already verified" });
+    }
+    if (user.verificationToken !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    await user.save();
+    return res.status(200).json({ message: "Email verified successfully", success: true });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
