@@ -1,6 +1,7 @@
+import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
 import User from "../models/user.model";
-import type { RegisterRequestBody, RegisterResponseBody } from "./auth.types";
+import type { LoginRequestBody, LoginResponseBody, RegisterRequestBody, RegisterResponseBody } from "./auth.types";
 import bycrypt from "bcryptjs";
 import sendEmail from "../utils/sendEmail";
 import { verificationEmailTemplate } from "../utils/emailTemplates";
@@ -46,6 +47,42 @@ export const registerUser = async (req: Request<{}, {}, RegisterRequestBody>, re
         role: user.role,
       },
     });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const loginUser = async (req: Request<{}, {}, LoginRequestBody>, res: Response<LoginResponseBody>): Promise<Response | void> => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Please verify your email before logging in." });
+    }
+
+    const isMatched = await bycrypt.compare(password, user.password);
+
+    if (!isMatched) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Your account has been blocked. Please contact support." });
+    }
+
+    //Token expires in 1 hour
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+
+    return res.status(200).json({ message: "Login successful", token });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
