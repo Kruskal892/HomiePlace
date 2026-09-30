@@ -14,3 +14,13 @@ export interface RegisterResponseBody {
     role: string;
   };
 }
+
+export interface LoginRequestBody {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponseBody {
+  message: string;
+  token?: string;
+}
