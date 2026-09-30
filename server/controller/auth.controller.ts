@@ -24,7 +24,7 @@ export const registerUser = async (req: Request<{}, {}, RegisterRequestBody>, re
       email,
       password: hashedPassword,
       role,
-      isApproved: role === "manager" ? false : true,
+      isApproved: role !== "manager",
       verificationToken,
     });
 
