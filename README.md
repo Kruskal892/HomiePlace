@@ -13,6 +13,7 @@ HomiePlace is a full-stack web application for shared housing, room finding, and
 | Routing | React Router DOM v7 |
 | Backend | Node.js, TypeScript, Express 5, ES modules |
 | Database | MongoDB with Mongoose |
+| Verification email (OTP) | Nodemailer with Gmail transport |
 | Development tools | npm, ESLint, Nodemon |
 
 ## Project structure
@@ -26,6 +27,7 @@ HomiePlace/
     config/            Database configuration
     controller/        Request handlers and related types
     models/            Mongoose schemas
+    utils/             Email delivery and email templates
     server.ts          Server entry point
   .agent/              Architecture, coding standards, and workflows
   AGENTS.md            AI contributor instructions
@@ -64,7 +66,20 @@ MONGO_URI=mongodb://127.0.0.1:27017/homieplace
 
 For MongoDB Atlas, replace the local URI with your cluster connection string. Keep credentials in your local environment file.
 
-Start the server:
+#### Verification email (OTP)
+
+The registration controller sends a six-digit email verification code using **Nodemailer**. Email delivery is implemented in `server/utils/sendEmail.ts`, with the HTML message in `server/utils/emailTemplates.ts`.
+
+The current transport uses Gmail. Add its credentials to `server/.env` to enable email delivery:
+
+```dotenv
+SMTP_USER=your-gmail-address@gmail.com
+SMTP_PASS=your-gmail-app-password
+```
+
+Registration is not yet mounted as an API route, and OTP verification and expiry enforcement are not implemented.
+
+#### Start the server
 
 ```bash
 npm start
