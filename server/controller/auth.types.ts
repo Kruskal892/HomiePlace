@@ -30,3 +30,17 @@ export interface LoginResponseBody {
   message: string;
   token?: string;
 }
+
+export interface ForgotPasswordRequestBody {
+  email: string;
+}
+
+export interface ResetPasswordRequestBody {
+  password: string;
+  confirmPassword: string;
+}
+
+export interface PasswordResetResponseBody {
+  message: string;
+  success: boolean;
+}

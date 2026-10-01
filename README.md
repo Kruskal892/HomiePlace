@@ -13,8 +13,8 @@ HomiePlace is a full-stack web application for shared housing, room finding, and
 | Routing | React Router DOM v7 |
 | Backend | Node.js, TypeScript, Express 5, ES modules |
 | Database | MongoDB with Mongoose |
-| Verification email (OTP) | Nodemailer with Gmail transport |
-| Development tools | npm, ESLint, Nodemon |
+| Email delivery | Nodemailer with Gmail transport |
+| Development tools | npm, ESLint, Prettier, Nodemon |
 
 ## Project structure
 
@@ -27,7 +27,7 @@ HomiePlace/
     config/            Database configuration
     controller/        Request handlers and related types
     models/            Mongoose schemas
-    utils/             Email delivery and email templates
+    utils/             Email delivery, templates, client links, and email validation
     server.ts          Server entry point
   .agent/              Architecture, coding standards, and workflows
   AGENTS.md            AI contributor instructions
@@ -35,6 +35,14 @@ HomiePlace/
 ```
 
 The client and server are separate npm packages, each with its own dependencies and lockfile. Run package commands from the corresponding directory.
+
+### Code formatting
+
+Install the recommended **Prettier - Code formatter** VS Code extension (`esbenp.prettier-vscode`). Workspace settings enable format on save; **Shift + Alt + F** formats the current document. Both packages use the root `.prettierrc.json`: 100-column target width, two-space indentation, double quotes, and semicolons.
+
+From either `client/` or `server/`, run `npm run format` to format that package or `npm run format:check` to check formatting without changing files. Dependencies, build output, environment files, and lockfiles are excluded.
+
+The client currently displays a placeholder. The backend exposes a health response at `GET /` and the two password-reset endpoints described below. Registration, login, profile, and email-verification controllers exist but are not mounted as API routes.
 
 ## Getting started
 
@@ -77,7 +85,79 @@ SMTP_USER=your-gmail-address@gmail.com
 SMTP_PASS=your-gmail-app-password
 ```
 
-Registration is not yet mounted as an API route, and OTP verification and expiry enforcement are not implemented.
+Registration and email verification are not yet mounted as API routes. The `verifyEmail` controller checks the OTP and marks the account as verified, but OTP expiry enforcement is not implemented.
+
+#### Password reset
+
+Add the trusted frontend origin to `server/.env` alongside the SMTP settings above:
+
+```dotenv
+CLIENT_URL=http://localhost:5173
+```
+
+Use an HTTPS origin in production, without a path, query, credentials, or fragment. HTTP loopback URLs are allowed only outside production. The server never builds reset links from request headers.
+
+The reset flow has two steps: `forgotPassword` emails a temporary token, then `resetPassword` accepts that token and a new password. The frontend reset page is deferred, so use Postman to call the backend directly. The client does not need to be running for these API requests.
+
+**1. Request a password-reset email**
+
+Send a `POST` request to `http://localhost:5000/api/auth/forgot-password`, with `Content-Type: application/json` and this JSON body:
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+Use the email of a user already stored in MongoDB. The controller validates the email with `isValidEmail` and builds the link with `buildClientUrl`, which validates `CLIENT_URL`, then returns the same `202` response for existing and nonexistent accounts:
+
+```json
+{
+  "message": "If an account exists, password reset instructions will be sent.",
+  "success": true
+}
+```
+
+`202` means the request was accepted, not that an email was delivered. After responding, the controller saves a SHA-256 hash of a random token and its 15-minute expiry for a matching account, then emails the original token. The current password remains unchanged. An unknown account receives no email.
+
+The link has the form `CLIENT_URL/reset-password/<token>`. The page is not implemented yet; copy the token from the link for the next request. If email delivery fails, cleanup removes the saved token only if it still belongs to that request, preserving any newer token. Delivery runs in the Node process and does not survive a restart. Processing errors are logged generically; SMTP delivery failures trigger token cleanup without a separate log.
+
+**2. Submit the token and new password**
+
+Send a `POST` request to `http://localhost:5000/api/auth/reset-password/<token>`, replacing `<token>` with the value from the email. Use `Content-Type: application/json` and this body:
+
+```json
+{
+  "password": "my new secure password",
+  "confirmPassword": "my new secure password"
+}
+```
+
+Passwords must match, contain at least 15 characters, and fit bcrypt's 72 UTF-8 byte limit. The controller hashes the submitted token to find the account and hashes the new password with bcrypt. One atomic database update checks that the token is unexpired, saves the password hash, and removes the token and expiry. Each token can be used only once.
+
+A successful reset returns `200`:
+
+```json
+{
+  "message": "Password updated. Sign in with your new password.",
+  "success": true
+}
+```
+
+Resetting does not log the user in or change account approval, verification, or blocked status. The login controller remains unmounted.
+
+| Endpoint | Error status | Meaning |
+| --- | --- | --- |
+| Forgot password | `400` | Invalid email input |
+| Forgot password | `503` | Missing or invalid `CLIENT_URL` |
+| Reset password | `400` | Invalid, expired, or used token; invalid password; or mismatched confirmation |
+| Reset password | `500` | Password update could not be completed |
+
+Both endpoints send `Cache-Control: no-store`. JSON request bodies are limited to 10 KB. Tokens must contain exactly 40 lowercase hexadecimal characters.
+
+The shared `isValidEmail` helper checks string input, a maximum length of 254 characters, and basic email syntax before queries in registration, login, verification, and forgot-password. It does not normalize addresses or prove mailbox ownership. `buildClientUrl(path)` rejects links outside the configured origin.
+
+Rate limiting is deferred. Add per-IP and per-email limits before exposing the endpoints publicly. There is currently no password-reset test file or frontend reset page.
 
 #### Start the server
 
@@ -111,14 +191,19 @@ Run these commands from `client/`:
 | `npm run build` | Check TypeScript and create a production build in `dist/` |
 | `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |
+| `npm run format` | Format package files with the shared Prettier configuration |
+| `npm run format:check` | Check formatting without changing files |
 
 ### Server
 
-Run this command from `server/`:
+Run these commands from `server/`:
 
 | Command | Description |
 | --- | --- |
 | `npm start` | Run the TypeScript server with Nodemon auto-restart |
+| `npm run dev` | Run the same development server as `npm start` |
+| `npm run format` | Format package files with the shared Prettier configuration |
+| `npm run format:check` | Check formatting without changing files |
 
 ## Contributing
 

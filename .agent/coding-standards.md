@@ -10,6 +10,7 @@ These are implementation rules, not claims that every feature exists. See [archi
 - Keep client code in `client/`; reuse the existing BrowserRouter when adding routes.
 - Use Tailwind v4 through the existing CSS import and Vite plugin. Preserve accessibility and mobile-first layouts.
 - If Tailwind Variants is introduced, reserve slots for customizable or variant-controlled classes. Keep static structure, animation, transitions, and interaction classes in JSX. It is not currently installed.
+- Use the shared root Prettier configuration and package formatting scripts.
 - Match surrounding style. The app TypeScript config does not explicitly enable strict mode; the no-any rule still applies.
 
 ## Server
@@ -18,11 +19,12 @@ These are implementation rules, not claims that every feature exists. See [archi
 - Node runs TypeScript directly with type stripping. Use erasable syntax, explicit `.ts` extensions for relative runtime imports, and `import type` for types.
 - Keep handlers in the existing `server/controller/`, models in `server/models/`, and configuration in `server/config/`.
 - Add route/middleware files only when needed and mount them explicitly. Exporting a handler does not expose an endpoint.
+- Reuse `utils/isValidEmail.ts` for email checks and `utils/buildClientUrl.ts` for trusted frontend links.
 - Type request/response bodies, validate input at runtime, and respond on every handled success/error path.
 - Use async/await and handle expected errors without exposing secrets. Express 5 forwards rejected handler promises, but no centralized application error middleware currently exists.
 - Preserve database constraints and timestamps. Handle duplicate-key races; a pre-insert email lookup alone does not guarantee uniqueness.
 - Hash passwords with bcrypt. Enforce roles and approval permissions server-side before exposing registration. Public input must not grant privileged roles.
-- Complete secure token generation, expiry, delivery, and verification before exposing token workflows. The current Math.random token is unfinished groundwork.
+- Complete secure token generation, expiry, delivery, and verification before exposing token workflows. The registration OTP uses Math.random and has no enforced expiry; password-reset tokens use crypto.randomBytes, hashed storage, and a 15-minute expiry.
 - Native type stripping is not typechecking. Starting the server does not verify server type safety.
 
-Authentication, sockets, and uploads are not implemented. When adding them, enforce authorization at their trust boundaries and reuse installed dependencies where suitable.
+Password reset is mounted; other auth controllers remain unmounted. Sockets and uploads are not implemented. When adding them, enforce authorization at their trust boundaries and reuse installed dependencies where suitable.

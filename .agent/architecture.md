@@ -1,58 +1,43 @@
 # HomiePlace architecture
 
-## Actual source layout
+## Source layout and runtime
 
-```text
-client/
-  public/
-  src/
-    assets/
-    App.tsx                     Placeholder UI
-    main.tsx                    React root and BrowserRouter
-    index.css                   Tailwind import
-  eslint.config.js
-  tsconfig.json
-  tsconfig.app.json
-  tsconfig.node.json
-  vite.config.ts
-  package.json
-  package-lock.json
-server/
-  config/db.ts                  Mongoose connection
-  controller/auth.controller.ts Unmounted registerUser
-  controller/auth.types.ts      Request/response interfaces
-  models/user.model.ts          User schema
-  server.ts                     Express and HTTP bootstrap
-  package.json
-  package-lock.json
-```
+`client/src/main.tsx` renders `BrowserRouter > App`; App is a placeholder without routes or API requests. Tailwind v4 is enabled in CSS and Vite. The default client port is 5173.
 
-Use the singular `server/controller/` path. There are no server routes, middleware, sockets, or utils directories, and no client pages, components, context, hooks, services, or types directories yet.
+`server/server.ts` loads dotenv, awaits `config/db.ts`, and starts Express on port 5000. CORS is unrestricted and JSON bodies are limited to 10 KB. A database connection failure prevents startup. No centralized error middleware, rate limiter, or Socket.io initialization exists.
 
-## Client flow
+Handlers and request/response interfaces live in `server/controller/`. The user schema in `server/models/user.model.ts` stores identity, unique email, bcrypt password hash, roles, account flags, verification/reset tokens, expiry, and timestamps. `server/utils/` contains Gmail delivery, verification email HTML, trusted client-link construction, and email validation.
 
-`index.html` loads `src/main.tsx`, which renders `BrowserRouter > App`. App displays "App"; there are no routes or API requests. Tailwind v4 is imported in CSS and enabled with `@tailwindcss/vite`. Vite normally serves port 5173, with no configured port or proxy override.
+Each package has its own npm manifest and lockfile. Root Prettier configuration and VS Code settings provide shared formatting; there is no root npm runner. The server manifest still declares `main: server.js`; the runtime entry is `server.ts`. There is no server tsconfig or typecheck script.
 
-## Server flow
+## Mounted routes
 
-`npm start` invokes Nodemon and Node's native TypeScript stripping on `server.ts`. The entry loads dotenv and awaits `connectDB()` before registering CORS, JSON parsing, and `GET /`. An HTTP server listens on hardcoded port 5000.
+| Method | Path | Behavior |
+| --- | --- | --- |
+| GET | `/` | Returns `Hello World` |
+| POST | `/api/auth/forgot-password` | Accepts an email and processes reset delivery in the current process |
+| POST | `/api/auth/reset-password/:token` | Consumes a valid token and replaces the password hash |
 
-`connectDB()` requires `MONGO_URI` and awaits `mongoose.connect()`. Missing configuration or a failed connection prevents listening. CORS uses unrestricted `cors()`. No application error middleware or Socket.io initialization exists.
+## Password-reset flow
 
-The manifest still declares `main: server.js`; the actual entry is `server.ts`. There is no server tsconfig or typecheck script.
+1. Validate email and the configured client origin before acknowledging a request. Return 400 for invalid email or 503 for invalid client configuration.
+2. Return the same 202 response for existing and nonexistent accounts before querying MongoDB. This does not confirm email delivery.
+3. Generate a 20-byte random token, store its SHA-256 hash with a 15-minute expiry, and email the original token through the Gmail helper. The password remains unchanged.
+4. On SMTP failure, remove token fields only if the stored hash still matches that request, preserving a newer request's token. Processing runs in the Node process and does not survive restarts.
+5. Reset accepts a 40-character lowercase hexadecimal token and matching passwords of at least 15 Unicode code points and at most 72 UTF-8 bytes. An atomic update checks expiry, saves a bcrypt hash, and removes token fields. Invalid, expired, or used tokens return 400; success returns 200.
 
-## Registration groundwork
+Both handlers send `Cache-Control: no-store`. Reset does not issue a login token or change approval, verification, or blocked flags. The frontend reset page and rate limiting are deferred; no automated test files are retained.
 
-`registerUser` is exported but never imported or mounted by the entry point. It:
+## Shared helpers
 
-1. Reads name, email, password, and role from the request.
-2. Returns 400 with `User already exists` for a matching email.
-3. Hashes the password with bcrypt using 10 rounds.
-4. Generates a six-digit token with Math.random and creates a user.
-5. Sets approval false for managers and true otherwise. Caught failures return 500 with `Internal server error`.
+`isValidEmail(unknown)` narrows valid strings using basic syntax and a 254-character limit. Registration, login, verification, and forgot-password call it before email queries. It does not normalize addresses or verify ownership.
 
-The success path sends no response. Runtime validation, role authorization, token delivery/verification, and routing are missing. Relative imports omit extensions needed for direct Node ESM execution. Do not describe this as a ready-to-use endpoint.
+`buildClientUrl(path)` reads `CLIENT_URL`, requires an HTTPS origin without credentials, path, query, or fragment, and rejects resulting links outside that origin. HTTP localhost, 127.0.0.1, and IPv6 loopback are allowed outside production. Request headers never supply the reset-link origin.
 
-The user schema requires name, unique email, and password. Roles are user (default), manager, and admin. It also stores phone, avatar, address, blocked/approved/verified flags, verification/reset tokens, reset expiry, and timestamps. The request interface permits an admin role and an optional isApproved field; the controller ignores the latter and derives approval from role.
+## Unmounted auth controllers
 
-JWT, Socket.io, Cloudinary, Multer, and Streamifier are installed but unused. Login, messaging, uploads, and email verification are not implemented.
+Registration validates email, hashes passwords, creates users, sends a six-digit OTP, and responds with user details. Role authorization and complete boundary validation remain unfinished; public registration must not grant privileged roles. Its OTP uses Math.random, and verification does not enforce expiry despite the email template mentioning ten minutes.
+
+Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Profile loads a user by `req.user.id`, excluding the password. Verification compares the stored OTP and marks the account verified. None of these handlers is mounted; no authentication middleware populates `req.user`.
+
+Socket.io, Cloudinary, Multer, and Streamifier are installed but not integrated.
