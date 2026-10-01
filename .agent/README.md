@@ -8,7 +8,7 @@ Read this overview and all three guides before proposing or changing code.
 - `server/`: TypeScript, Node ESM, Express 5, and Mongoose 9. `GET /` and the forgot/reset-password POST endpoints are mounted.
 - Registration model/types/controller exist, but registration is not an exposed or complete API.
 - Login, profile, and email-verification controllers exist but remain unmounted. Login uses JWT; Socket.io and uploads are not integrated.
-- Each package has its own npm manifest and lockfile; there is no root package runner.
+- Each package has its own npm manifest and lockfile; the root package runs both development scripts through concurrently.
 
 ## Required guides
 

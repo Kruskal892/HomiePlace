@@ -8,7 +8,7 @@
 
 Handlers and request/response interfaces live in `server/controller/`. The user schema in `server/models/user.model.ts` stores identity, unique email, bcrypt password hash, roles, account flags, verification/reset tokens, expiry, and timestamps. `server/utils/` contains Gmail delivery, verification email HTML, trusted client-link construction, and email validation.
 
-Each package has its own npm manifest and lockfile. Root Prettier configuration and VS Code settings provide shared formatting; there is no root npm runner. The server manifest still declares `main: server.js`; the runtime entry is `server.ts`. There is no server tsconfig or typecheck script.
+Each package has its own npm manifest and lockfile. The private root package uses concurrently to run the existing client/server development scripts with `npm --prefix`, preserving each package's working directory. Root Prettier configuration and VS Code settings provide shared formatting. The server manifest still declares `main: server.js`; the runtime entry is `server.ts`. There is no server tsconfig or typecheck script.
 
 ## Mounted routes
 

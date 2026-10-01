@@ -34,7 +34,7 @@ HomiePlace/
   CLAUDE.md            Claude instructions
 ```
 
-The client and server are separate npm packages, each with its own dependencies and lockfile. Run package commands from the corresponding directory.
+The client and server are separate npm packages, each with its own dependencies and lockfile. The root package starts both through their existing development scripts.
 
 ### Code formatting
 
@@ -180,6 +180,24 @@ npm run dev
 Open the URL printed by Vite, normally `http://localhost:5173`. No client environment configuration is required for local startup.
 
 ## Available scripts
+
+### Repository root
+
+Install dependencies once from the repository root:
+
+```bash
+npm ci
+npm --prefix server ci
+npm --prefix client ci
+```
+
+After configuring `server/.env`, start both apps with `npm run dev`. Press Ctrl+C to stop both.
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the server and client together |
+| `npm run dev:server` | Start only the server |
+| `npm run dev:client` | Start only the client |
 
 ### Client
 
