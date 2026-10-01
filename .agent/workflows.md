@@ -4,21 +4,16 @@
 
 Use Node.js 22.13+ on the 22.x line, or Node.js 24+, npm, and MongoDB. The server requires native TypeScript stripping; Vite and ESLint also require a modern Node version.
 
-From `client/`:
+From the repository root:
 
 ```bash
 npm ci
+npm --prefix client ci
+npm --prefix server ci
 npm run dev
 ```
 
-From `server/`, in another terminal:
-
-```bash
-npm ci
-npm start
-```
-
-Packages have separate manifests and lockfiles. There is no root npm runner. Vite normally uses port 5173; the server uses hardcoded port 5000 after MongoDB connects.
+Packages have separate manifests and lockfiles. The root runner starts both apps; Ctrl+C stops both. Use `npm run dev:client` or `npm run dev:server` at the root to start only one. Vite normally uses port 5173; the server uses hardcoded port 5000 after MongoDB connects.
 
 ## Environment
 
@@ -36,6 +31,9 @@ Neither package includes an `.env.example`. Do not instruct contributors to copy
 
 | Directory | Command | Behavior |
 | --- | --- | --- |
+| root | `npm run dev` | Run client and server together with concurrently |
+| root | `npm run dev:client` | Run the client development script |
+| root | `npm run dev:server` | Run the server development script |
 | client | `npm run dev` | Vite development server |
 | client | `npm run build` | TypeScript project checks, then Vite build |
 | client | `npm run lint` | ESLint |
