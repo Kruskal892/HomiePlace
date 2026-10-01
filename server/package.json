@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "nodemon --watch . --ext ts,js,json --exec \"node --experimental-strip-types\" server.ts",
-    "dev": "nodemon --watch . --ext ts,js,json --exec \"node --experimental-strip-types\" server.ts"
+    "dev": "nodemon --watch . --ext ts,js,json --exec \"node --experimental-strip-types\" server.ts",
+    "format": "prettier --write . --ignore-path ../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../.prettierignore"
   },
   "author": "Minhnda",
   "license": "ISC",
@@ -29,6 +31,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.3",
+    "prettier": "3.9.9",
     "typescript": "^7.0.2"
   }
 }
