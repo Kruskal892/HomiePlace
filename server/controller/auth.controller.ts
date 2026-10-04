@@ -1,12 +1,8 @@
-import jwt from "jsonwebtoken";
 import bycrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import type { Request, Response } from "express";
-import User from "../models/user.model.ts";
-import sendEmail from "../utils/sendEmail.ts";
-import { buildClientUrl } from "../utils/buildClientUrl.ts";
-import { isValidEmail } from "../utils/isValidEmail.ts";
-import { verificationEmailTemplate } from "../utils/emailTemplates.ts";
+
 import type {
   AuthenticatedRequest,
   ForgotPasswordRequestBody,
@@ -16,7 +12,9 @@ import type {
   RegisterRequestBody,
   RegisterResponseBody,
   ResetPasswordRequestBody,
-} from "./auth.types.ts";
+} from "#controller";
+import { User } from "#models";
+import { buildClientUrl, isValidEmail, sendEmail, verificationEmailTemplate } from "#utils";
 
 //Register a new user
 export const registerUser = async (

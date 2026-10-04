@@ -34,4 +34,6 @@ No route definitions, pages, contexts, hooks, services, or shared types director
 
 There is no test script. ESLint includes JavaScript, TypeScript, React Hooks, and React Refresh recommended configurations. The app TypeScript config checks unused locals/parameters and erasable syntax but does not explicitly enable `strict`. Project rules still prohibit `any`.
 
-Follow [AGENTS.md](../AGENTS.md) and the [.agent guides](../.agent/README.md). Agents must not run lint or build unless explicitly requested.
+See the [developer documentation](../docs/README.md) for project architecture, configuration,
+API contracts, coding standards, and development workflows. Follow [AGENTS.md](../AGENTS.md)
+and the [.agent guides](../.agent/README.md). Agents must not run lint or build unless explicitly requested.

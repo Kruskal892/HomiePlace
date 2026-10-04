@@ -1,7 +1,17 @@
 import type { Request } from "express";
 
+import type { JwtPayload } from "jsonwebtoken";
+
+export interface AuthTokenPayload extends JwtPayload {
+  id: string;
+}
+
+export interface AuthErrorResponseBody {
+  message: string;
+}
+
 export interface AuthenticatedRequest extends Request {
-  user?: { id: string };
+  user?: { id: string; isBlocked?: boolean; role: string };
 }
 
 export interface RegisterRequestBody {

@@ -4,6 +4,10 @@
 
 HomiePlace is a full-stack web application for shared housing, room finding, and roommate collaboration. The project aims to help people find a place to live and connect with the people they share it with.
 
+New contributors should start with the [developer documentation](docs/README.md), which covers
+setup, architecture, API contracts, the data model, configuration, coding standards,
+development workflow, implementation gaps, and troubleshooting.
+
 ## Tech stack
 
 | Layer | Technologies |
@@ -26,23 +30,41 @@ HomiePlace/
   server/              Express backend
     config/            Database configuration
     controller/        Request handlers and related types
+    middleware/        Authentication and role middleware (not mounted)
     models/            Mongoose schemas
     utils/             Email delivery, templates, client links, and email validation
     server.ts          Server entry point
   .agent/              Architecture, coding standards, and workflows
+  docs/                Shared developer documentation and onboarding
   AGENTS.md            AI contributor instructions
   CLAUDE.md            Claude instructions
 ```
 
 The client and server are separate npm packages, each with its own dependencies and lockfile. The root package starts both through their existing development scripts.
 
-### Code formatting
+### Formatting and linting
 
-Install the recommended **Prettier - Code formatter** VS Code extension (`esbenp.prettier-vscode`). Workspace settings enable format on save; **Shift + Alt + F** formats the current document. Both packages use the root `.prettierrc.json`: 100-column target width, two-space indentation, double quotes, and semicolons.
+Install the recommended **Prettier - Code formatter** (`esbenp.prettier-vscode`) and **ESLint** (`dbaeumer.vscode-eslint`) VS Code extensions. Workspace settings enable Prettier format on save; **Shift + Alt + F** formats the current document. Both packages use the root `.prettierrc.json`: a 90-column target width, two-space indentation, double quotes, semicolons, trailing commas, LF line endings, and one JSX attribute per line. VS Code's bounded word wrap remains at 100 columns; it does not control Prettier output.
 
 From either `client/` or `server/`, run `npm run format` to format that package or `npm run format:check` to check formatting without changing files. Dependencies, build output, environment files, and lockfiles are excluded.
 
-The client currently displays a placeholder. The backend exposes a health response at `GET /` and the two password-reset endpoints described below. Registration, login, profile, and email-verification controllers exist but are not mounted as API routes.
+Each package has its own ESLint flat configuration and `npm run lint` script. The client checks TypeScript, React Hooks, and React Refresh using browser globals. The server checks TypeScript using Node globals, rejects explicit `any`, and ignores `dist` and `coverage`. These recommended rules do not use TypeScript type information. VS Code runs ESLint in the respective package directories; formatting on save uses Prettier and does not automatically fix ESLint findings.
+
+### Server import aliases
+
+The `imports` field in `server/package.json` defines native Node aliases. TypeScript resolves them through `server/tsconfig.json` with `NodeNext`; no runtime alias loader is needed.
+
+| Alias | Target |
+| --- | --- |
+| `#controller` | `server/controller/index.ts` |
+| `#utils` | `server/utils/index.ts` |
+| `#templates` | `server/utils/templates/index.ts` |
+| `#models` | `server/models/index.ts` |
+| `#*` | `server/*.ts`, including nested paths |
+
+Use named barrel exports, for example `import { User } from "#models"`, and `import type` for types, such as `import type { AuthenticatedRequest } from "#controller"`. For individual files, use extensionless imports such as `#utils/isValidEmail` or `#middleware/auth.middleware`. Relative runtime imports still require `.ts` extensions. These aliases apply only to the server; the client has no configured source aliases.
+
+The client currently displays a placeholder. The backend exposes `GET /`, the two password-reset endpoints described below, and `POST /api/auth/register`. Registration validation and role authorization remain unfinished. Login, profile, email verification, and authentication middleware are not mounted.
 
 ## Getting started
 
@@ -76,7 +98,7 @@ For MongoDB Atlas, replace the local URI with your cluster connection string. Ke
 
 #### Verification email (OTP)
 
-The registration controller sends a six-digit email verification code using **Nodemailer**. Email delivery is implemented in `server/utils/sendEmail.ts`, with the HTML message in `server/utils/emailTemplates.ts`.
+The registration controller sends a six-digit email verification code using **Nodemailer**. Email delivery is implemented in `server/utils/sendEmail.ts`, with the HTML message in `server/utils/templates/emailTemplates.ts`, exported through `#templates` and `#utils`.
 
 The current transport uses Gmail. Add its credentials to `server/.env` to enable email delivery:
 
@@ -85,7 +107,7 @@ SMTP_USER=your-gmail-address@gmail.com
 SMTP_PASS=your-gmail-app-password
 ```
 
-Registration and email verification are not yet mounted as API routes. The `verifyEmail` controller checks the OTP and marks the account as verified, but OTP expiry enforcement is not implemented.
+Registration is mounted at `POST /api/auth/register`; email verification remains unmounted. The `verifyEmail` controller checks the OTP and marks the account as verified, but OTP expiry enforcement is not implemented.
 
 #### Password reset
 
@@ -220,6 +242,7 @@ Run these commands from `server/`:
 | --- | --- |
 | `npm start` | Run the TypeScript server with Nodemon auto-restart |
 | `npm run dev` | Run the same development server as `npm start` |
+| `npm run lint` | Run server ESLint, including explicit `any` checks |
 | `npm run format` | Format package files with the shared Prettier configuration |
 | `npm run format:check` | Check formatting without changing files |
 
@@ -230,8 +253,9 @@ Keep frontend changes in `client/` and backend changes in `server/`. Follow the 
 Read the following guides before contributing:
 
 - [Client guide](client/README.md)
-- [Architecture](.agent/architecture.md)
-- [Coding standards](.agent/coding-standards.md)
-- [Development workflows](.agent/workflows.md)
+- [Developer documentation index](docs/README.md)
+- [Architecture](docs/architecture.md)
+- [Coding standards](docs/coding-standards.md)
+- [Development workflows](docs/development.md)
 
 AI coding assistants should also read [AGENTS.md](AGENTS.md) and the [agent guidelines](.agent/README.md).
