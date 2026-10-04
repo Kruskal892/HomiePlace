@@ -15,9 +15,13 @@ app.use(cors());
 app.use(express.json({ limit: "10kb" }));
 
 //Routes
+// Forgot password
 app.post("/api/auth/forgot-password", forgotPassword);
+// Reset password
 app.post("/api/auth/reset-password/:token", resetPassword);
+// Register user
 app.post("/api/auth/register", registerUser);
+
 app.get("/", (req, res) => {
   res.send("Hello World");
 });

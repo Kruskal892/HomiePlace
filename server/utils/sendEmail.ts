@@ -6,7 +6,7 @@ interface SendEmailOptions {
   html: string;
 }
 
-const sendEmail = async (options: SendEmailOptions): Promise<void> => {
+export const sendEmail = async (options: SendEmailOptions): Promise<void> => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -21,4 +21,3 @@ const sendEmail = async (options: SendEmailOptions): Promise<void> => {
     html: options.html,
   });
 };
-export default sendEmail;
