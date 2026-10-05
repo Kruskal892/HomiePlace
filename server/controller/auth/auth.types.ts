@@ -46,6 +46,11 @@ export interface VerifyEmailRequestBody {
   otp: string;
 }
 
+export interface VerifyEmailResponseBody {
+  message: string;
+  success?: boolean;
+}
+
 export interface ForgotPasswordRequestBody {
   email: string;
 }

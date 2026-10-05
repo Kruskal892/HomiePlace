@@ -30,11 +30,35 @@ These are implementation rules, not claims that every feature exists. See [archi
 - Native type stripping is not typechecking. Starting the server does not verify server type safety.
 
 Registration, login, verification, password reset, and profile are mounted through `authRouter`.
-Profile uses `protect`; `authorizeRoles` is not attached to any route. Authentication still
-has the control-flow gaps listed in [Implementation status](implementation-status.md).
+Profile uses `protect`; `authorizeRoles` is not attached to any route. `protect` checks blocked status and attaches `req.user` before continuing once. Remaining
+auth gaps are listed in [Implementation status](implementation-status.md).
 Sockets and uploads are not implemented.
 
 ## Express request typing
+
+### Controller module exports
+
+Group each module under `server/controller/<module>/`, with a local `index.ts` exporting
+its controller and types. The root `server/controller/index.ts` re-exports module barrels:
+
+```ts
+// controller/auth/index.ts
+export * from "./auth.controller.ts";
+export * from "./auth.types.ts";
+
+// controller/index.ts
+export * from "./auth/index.ts";
+
+// Routes and other consumers
+import { registerUser } from "#controller";
+import type { AuthenticatedRequest } from "#controller";
+```
+
+Inside a module, import local types directly from `./auth.types.ts`. Relative ESM paths
+must name the file, including `.ts`, because Node executes TypeScript directly here;
+`./auth` does not resolve to `./auth/index.ts`. Keep exported names distinct across modules.
+
+### Body and request types
 
 Body interfaces describe JSON fields and do not extend `Request`. Supply them as the third
 Express `Request` generic (`params`, `response body`, `request body`) and read fields from

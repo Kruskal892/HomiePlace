@@ -6,7 +6,7 @@ import "dotenv/config";
 
 import http from "http";
 
-import { authRouter } from "#routes";
+import { authRouter, userRouter } from "#routes";
 
 import { connectDB } from "./config/db.ts";
 
@@ -22,6 +22,7 @@ app.use(express.json({ limit: "10kb" }));
 //Routes
 // Forgot password
 app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

@@ -46,7 +46,7 @@ Neither package includes an `.env.example`. Do not instruct contributors to copy
 
 **Do not run lint or build unless explicitly requested.** Listing commands is not authorization to execute them. Neither package has a test script; the server has no build or typecheck script.
 
-For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. The password-reset endpoints are mounted; see [API reference](api.md) for Postman requests, response codes, and validation. Registration is mounted but unfinished; login, verification, and profile are mounted through `authRouter`. Profile uses the incomplete `protect` middleware; see [Implementation status](implementation-status.md). No frontend reset page or retained automated reset tests exist.
+For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. The password-reset endpoints are mounted; see [API reference](api.md) for Postman requests, response codes, and validation. Registration is mounted but unfinished; login, verification, and profile are mounted through `authRouter`. Profile uses `protect`; the user-module handler is also mounted at `/api/users/profile`; see [Implementation status](implementation-status.md). No frontend reset page or retained automated reset tests exist.
 
 Install the recommended Prettier and ESLint VS Code extensions. Prettier formats on save using the root configuration: 90-column target, two spaces, double quotes, semicolons, trailing commas, LF endings, and one JSX attribute per line. Editor word wrap remains at 100 columns. ESLint uses separate client/server working directories and validates JavaScript, TypeScript, and TSX; automatic ESLint fixes on save are not configured. Formatting excludes dependencies, build output, lockfiles, and environment files.
 
@@ -77,3 +77,9 @@ Package formatting scripts only cover their package directory. They do not forma
 documentation. For documentation-only edits, checking links and `git diff --check` is the
 documented baseline; do not claim that formatting, lint, build, or runtime checks passed
 unless they were actually run.
+
+## Focused profile check
+
+From `server/`, run `node --experimental-strip-types tests/user-profile.test.mjs`.
+This checks missing-token rejection, user attachment, and blocked-user rejection using
+a stubbed database lookup. It does not verify MongoDB, login, or email delivery.

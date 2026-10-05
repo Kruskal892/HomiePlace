@@ -47,7 +47,7 @@ Each package has its own npm manifest and lockfile. The private root package use
 | POST | `/api/auth/register` | Runs registration and sends a verification OTP; validation and role authorization remain unfinished |
 | POST | `/api/auth/login` | Checks credentials and account flags, then signs a one-hour JWT |
 | POST | `/api/auth/verify-email` | Compares the OTP and marks the account verified |
-| GET | `/api/auth/profile` | Uses `protect`; request attachment and control flow remain incomplete |
+| GET | `/api/auth/profile` | Uses `protect`; returns the auth-module profile |
 | POST | `/api/auth/forgot-password` | Accepts an email and processes reset delivery in the current process |
 | POST | `/api/auth/reset-password/:token` | Consumes a valid token and replaces the password hash |
 
@@ -71,7 +71,7 @@ Both handlers send `Cache-Control: no-store`. Reset does not issue a login token
 
 Registration validates email, hashes passwords, creates users, sends a six-digit OTP, and responds with user details. Role authorization and complete boundary validation remain unfinished; public registration must not grant privileged roles. Its OTP uses Math.random, and verification does not enforce expiry despite the email template mentioning ten minutes.
 
-Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Profile loads a user by `req.user.id`, excluding the password. Verification compares the stored OTP and marks the account verified. These handlers are mounted through `server/routes/auth.routes.ts`, with `authRouter` mounted at `/api/auth`. Profile uses `protect`, which still calls `next()` before attaching `req.user`, calls it twice, and checks blocked status on the wrong object. `authorizeRoles` is exported but not attached to any route.
+Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Profile loads a user by `req.user.id`, excluding the password. Verification compares the stored OTP and marks the account verified. These handlers are mounted through `server/routes/auth.routes.ts`, with `authRouter` mounted at `/api/auth`. Profile uses `protect`, which checks the loaded user for blocked status and attaches `req.user` before calling `next()` once. A separate user-module controller is mounted at `GET /api/users/profile`. `authorizeRoles` is exported but not attached to any route.
 
 Socket.io, Cloudinary, Multer, and Streamifier are installed but not integrated.
 
