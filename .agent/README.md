@@ -10,7 +10,7 @@ Maintain project details in `docs/` so developers and agents use the same refere
 - `client/`: React 19, TypeScript, Vite 8, Tailwind v4, and React Router v7. BrowserRouter wraps a placeholder.
 - `server/`: TypeScript, Node ESM, Express 5, and Mongoose 9. `GET /`, registration, and the forgot/reset-password POST endpoints are mounted.
 - Registration is mounted at `POST /api/auth/register`, but boundary validation and role authorization remain unfinished.
-- Login, profile, and email verification are mounted through `authRouter`. Profile uses incomplete `protect` middleware; role middleware is unattached. Login uses JWT; Socket.io and uploads are not integrated.
+- Login, profile, and email verification are mounted through `authRouter`. Profile uses `protect`; the user-module profile is mounted at `/api/users/profile`. Role middleware is unattached. Login uses JWT; Socket.io and uploads are not integrated.
 - Each package has its own npm manifest and lockfile; the root package runs both development scripts through concurrently.
 
 ## Required guides

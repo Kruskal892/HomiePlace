@@ -3,7 +3,7 @@
 Local base URL: `http://localhost:5000`. [server/server.ts](../server/server.ts) mounts
 [authRouter](../server/routes/auth.routes.ts) at `/api/auth`.
 JSON requests use `Content-Type: application/json`; the parser limits bodies to 10 KB.
-Profile uses `protect`; the remaining auth routes do not use authentication middleware.
+Both profile routes use `protect`; the remaining auth routes do not use authentication middleware.
 
 | Method | Route | Current behavior |
 | --- | --- | --- |
@@ -11,7 +11,8 @@ Profile uses `protect`; the remaining auth routes do not use authentication midd
 | POST | `/api/auth/register` | Create an account and send a verification OTP |
 | POST | `/api/auth/login` | Check credentials and account flags, then issue a one-hour JWT |
 | POST | `/api/auth/verify-email` | Compare the OTP and mark the account verified |
-| GET | `/api/auth/profile` | Use `protect`, then load the user excluding the password |
+| GET | `/api/auth/profile` | Existing auth-module profile handler with `protect` |
+| GET | `/api/users/profile` | User-module profile handler with `protect`; returns selected profile fields, 401 without a user, and 404 when not found |
 | POST | `/api/auth/forgot-password` | Accept a reset request and attempt email delivery |
 | POST | `/api/auth/reset-password/:token` | Consume an unexpired token and replace the password |
 
@@ -72,9 +73,17 @@ The OTP uses `Math.random`; expiry mentioned in the email is not enforced.
 3. Submit `GET /api/auth/profile` with `Authorization: Bearer <token>`.
    The controller returns `{ "success": true, "user": ... }`, excluding only the password.
 
-Profile is mounted but `protect` currently calls `next()` before attaching `req.user`, then
-calls it again, and checks blocked status on the wrong object. Profile behavior is unreliable
-until those gaps are fixed. Other token fields are not excluded from the profile response.
+To test the user-module controller, use `GET http://localhost:5000/api/users/profile` in
+Postman, select Authorization ? Bearer Token, and paste the login response token. No request
+body is needed. Without a token, expect 401; blocked users receive 403. `JWT_SECRET` must
+be configured. The user-module controller returns only identity, contact, avatar, role,
+and timestamp fields. The older auth-module controller still excludes only the password.
+
+The user module also contains public-profile and update controllers, which are not mounted
+yet. Public lookup validates a MongoDB ID and selects `name`, `avatar`, `role`, and `createdAt`.
+Update validates optional string fields `name`, `phone`, and `address`, requires an authenticated
+user, and accepts an avatar only through `req.file.buffer` from Multer memory storage.
+It does not accept role changes or avatar URLs from the request body.
 
 ## Forgot password
 

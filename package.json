@@ -7,6 +7,7 @@
     "dev:client": "npm --prefix client run dev"
   },
   "devDependencies": {
+    "@types/streamifier": "^0.1.2",
     "concurrently": "^10.0.5"
   }
 }

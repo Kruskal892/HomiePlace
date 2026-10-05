@@ -16,6 +16,7 @@ import type {
   RegisterResponseBody,
   ResetPasswordRequestBody,
   VerifyEmailRequestBody,
+  VerifyEmailResponseBody,
 } from "#controller";
 
 import { User } from "#models";
@@ -29,7 +30,7 @@ import {
 
 //Register a new user
 export const registerUser = async (
-  req: Request<{}, {}, RegisterRequestBody>,
+  req: Request<Record<string, never>, RegisterResponseBody, RegisterRequestBody>,
   res: Response<RegisterResponseBody>,
 ): Promise<Response | void> => {
   try {
@@ -75,13 +76,13 @@ export const registerUser = async (
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: (error as Error).message || "Server Error" });
   }
 };
 
 // Login a user
 export const loginUser = async (
-  req: Request<{}, {}, LoginRequestBody>,
+  req: Request<Record<string, never>, LoginResponseBody, LoginRequestBody>,
   res: Response<LoginResponseBody>,
 ): Promise<Response | void> => {
   try {
@@ -124,7 +125,7 @@ export const loginUser = async (
 
     return res.status(200).json({ message: "Login successful", token });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: (error as Error).message || "Server Error" });
   }
 };
 
@@ -140,14 +141,14 @@ export const getUserProfile = async (
     }
     return res.status(200).json({ success: true, user });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: (error as Error).message || "Server Error" });
   }
 };
 
 // Verify Email
 export const verifyEmail = async (
-  req: Request<{}, {}, VerifyEmailRequestBody>,
-  res: Response,
+  req: Request<Record<string, never>, VerifyEmailResponseBody, VerifyEmailRequestBody>,
+  res: Response<VerifyEmailResponseBody>,
 ): Promise<Response | void> => {
   try {
     const { email, otp } = req.body;
@@ -174,12 +175,16 @@ export const verifyEmail = async (
       .status(200)
       .json({ message: "Email verified successfully", success: true });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: (error as Error).message || "Server Error" });
   }
 };
 
 export const forgotPassword = async (
-  req: Request<{}, {}, ForgotPasswordRequestBody>,
+  req: Request<
+    Record<string, never>,
+    PasswordResetResponseBody,
+    ForgotPasswordRequestBody
+  >,
   res: Response<PasswordResetResponseBody>,
 ): Promise<Response | void> => {
   res.set("Cache-Control", "no-store");
@@ -245,7 +250,7 @@ export const forgotPassword = async (
 };
 
 export const resetPassword = async (
-  req: Request<{ token: string }, {}, ResetPasswordRequestBody>,
+  req: Request<{ token: string }, PasswordResetResponseBody, ResetPasswordRequestBody>,
   res: Response<PasswordResetResponseBody>,
 ): Promise<Response | void> => {
   res.set("Cache-Control", "no-store");

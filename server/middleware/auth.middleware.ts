@@ -52,13 +52,11 @@ export const protect = async (
         message: "Not authorized, user not found",
       });
     }
-    if (req.user && req.user.isBlocked) {
+    if (user.isBlocked) {
       return res.status(403).json({
         message: "Your account has been blocked. Please contact support.",
       });
     }
-    next();
-
     req.user = { id: user.id, role: user.role, isBlocked: user.isBlocked };
 
     next();
