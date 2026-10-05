@@ -1,6 +1,9 @@
 import bycrypt from "bcryptjs";
+
 import jwt from "jsonwebtoken";
+
 import crypto from "node:crypto";
+
 import type { Request, Response } from "express";
 
 import type {
@@ -12,9 +15,17 @@ import type {
   RegisterRequestBody,
   RegisterResponseBody,
   ResetPasswordRequestBody,
+  VerifyEmailRequestBody,
 } from "#controller";
+
 import { User } from "#models";
-import { buildClientUrl, isValidEmail, sendEmail, verificationEmailTemplate } from "#utils";
+
+import {
+  buildClientUrl,
+  isValidEmail,
+  sendEmail,
+  verificationEmailTemplate,
+} from "#utils";
 
 //Register a new user
 export const registerUser = async (
@@ -89,7 +100,9 @@ export const loginUser = async (
       return res.status(400).json({ message: "Invalid email or password" });
     }
     if (!user.isVerified) {
-      return res.status(403).json({ message: "Please verify your email before logging in." });
+      return res
+        .status(403)
+        .json({ message: "Please verify your email before logging in." });
     }
 
     const isMatched = await bycrypt.compare(password, user.password);
@@ -132,7 +145,10 @@ export const getUserProfile = async (
 };
 
 // Verify Email
-export const verifyEmail = async (req: Request, res: Response): Promise<Response | void> => {
+export const verifyEmail = async (
+  req: Request<{}, {}, VerifyEmailRequestBody>,
+  res: Response,
+): Promise<Response | void> => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) {
@@ -154,7 +170,9 @@ export const verifyEmail = async (req: Request, res: Response): Promise<Response
     user.isVerified = true;
     user.verificationToken = undefined;
     await user.save();
-    return res.status(200).json({ message: "Email verified successfully", success: true });
+    return res
+      .status(200)
+      .json({ message: "Email verified successfully", success: true });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -169,7 +187,9 @@ export const forgotPassword = async (
   // 1. Validate the email before using it in a database query.
   const email = req.body?.email;
   if (!isValidEmail(email)) {
-    return res.status(400).json({ message: "A valid email address is required.", success: false });
+    return res
+      .status(400)
+      .json({ message: "A valid email address is required.", success: false });
   }
   // 2. Build links only from the configured frontend origin.
   const resetToken = crypto.randomBytes(20).toString("hex");
@@ -236,7 +256,9 @@ export const resetPassword = async (
   const confirmPassword = req.body?.confirmPassword;
   // 2. Reject malformed tokens, weak/oversized passwords, and mismatched confirmation.
   if (typeof token !== "string" || !/^[a-f0-9]{40}$/.test(token)) {
-    return res.status(400).json({ message: "Invalid or expired reset link.", success: false });
+    return res
+      .status(400)
+      .json({ message: "Invalid or expired reset link.", success: false });
   }
   if (
     typeof password !== "string" ||
@@ -266,16 +288,20 @@ export const resetPassword = async (
     ).select("_id");
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset link.", success: false });
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset link.", success: false });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Password updated. Sign in with your new password.", success: true });
+    return res.status(200).json({
+      message: "Password updated. Sign in with your new password.",
+      success: true,
+    });
   } catch {
     console.error("Failed to reset password.");
-    return res
-      .status(500)
-      .json({ message: "Unable to reset password. Please try again later.", success: false });
+    return res.status(500).json({
+      message: "Unable to reset password. Please try again later.",
+      success: false,
+    });
   }
 };

@@ -1,18 +1,22 @@
 # API reference
 
-Local base URL: `http://localhost:5000`. Routes are mounted directly in
-[server/server.ts](../server/server.ts). JSON requests use `Content-Type: application/json`;
-the parser limits bodies to 10 KB. No mounted route currently uses authentication middleware.
+Local base URL: `http://localhost:5000`. [server/server.ts](../server/server.ts) mounts
+[authRouter](../server/routes/auth.routes.ts) at `/api/auth`.
+JSON requests use `Content-Type: application/json`; the parser limits bodies to 10 KB.
+Profile uses `protect`; the remaining auth routes do not use authentication middleware.
 
 | Method | Route | Current behavior |
 | --- | --- | --- |
 | GET | `/` | 200 plain text `Hello World` |
 | POST | `/api/auth/register` | Create an account and send a verification OTP |
+| POST | `/api/auth/login` | Check credentials and account flags, then issue a one-hour JWT |
+| POST | `/api/auth/verify-email` | Compare the OTP and mark the account verified |
+| GET | `/api/auth/profile` | Use `protect`, then load the user excluding the password |
 | POST | `/api/auth/forgot-password` | Accept a reset request and attempt email delivery |
 | POST | `/api/auth/reset-password/:token` | Consume an unexpired token and replace the password |
 
-There are no mounted login, profile, or email-verification endpoints. Do not infer a URL
-from an exported controller name. Parser and framework errors have no custom centralized
+Mounted routes still have the gaps documented in [Implementation status](implementation-status.md).
+Parser and framework errors have no custom centralized
 JSON error envelope; auth controllers also use different response shapes.
 
 ## Register
@@ -56,7 +60,21 @@ Successful email delivery returns 201:
 
 The user is saved before SMTP delivery. A delivery failure returns 500 but leaves the account
 stored, so retrying registration can return `User already exists`. There is no resend route.
-The OTP uses `Math.random`; expiry mentioned in the email is not enforced. Verification is unmounted.
+The OTP uses `Math.random`; expiry mentioned in the email is not enforced.
+
+## Verification, login, and profile
+
+1. Submit `POST /api/auth/verify-email` with JSON `{ "email": "developer@example.com", "otp": "123456" }`,
+   using the OTP from the registration email. Success returns 200 with `success: true`.
+2. Submit `POST /api/auth/login` with JSON `{ "email": "developer@example.com", "password": "a long example password" }`.
+   Success returns 200 with a JWT in `token`. Login requires `JWT_SECRET`; unverified or
+   blocked accounts return 403, and invalid credentials return 400.
+3. Submit `GET /api/auth/profile` with `Authorization: Bearer <token>`.
+   The controller returns `{ "success": true, "user": ... }`, excluding only the password.
+
+Profile is mounted but `protect` currently calls `next()` before attaching `req.user`, then
+calls it again, and checks blocked status on the wrong object. Profile behavior is unreliable
+until those gaps are fixed. Other token fields are not excluded from the profile response.
 
 ## Forgot password
 

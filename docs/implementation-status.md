@@ -9,10 +9,10 @@ This is a source-based inventory, not evidence of deployment or successful runti
 | Database | MongoDB connection awaited before listening; User model exists |
 | Registration | Mounted; account creation and OTP email exist, validation and authorization incomplete |
 | Password reset | Mounted; hashed tokens, 15-minute expiry, atomic consumption, SMTP cleanup |
-| Login | Controller exists and signs one-hour JWTs; unmounted |
-| Profile | Controller exists; unmounted and response field filtering incomplete |
-| Email verification | Controller exists; unmounted, no enforced OTP expiry |
-| Authentication and roles | Middleware exports exist; unmounted and incomplete |
+| Login | Mounted; signs one-hour JWTs |
+| Profile | Mounted with `protect`; middleware and response field filtering incomplete |
+| Email verification | Mounted; no enforced OTP expiry |
+| Authentication and roles | `protect` mounted on profile but incomplete; `authorizeRoles` unattached |
 | Uploads | Cloudinary, Multer, and Streamifier installed; no integration |
 | Realtime | Socket.io installed; no initialization or events |
 | Housing and roommates | No implemented models, APIs, or UI |
@@ -21,7 +21,7 @@ This is a source-based inventory, not evidence of deployment or successful runti
 
 ## Auth work to finish
 
-Before integrating auth routes, review these concrete gaps:
+The mounted auth routes still have these concrete gaps:
 
 - Registration accepts role input without permission checks. Validate all fields, restrict
   privileged roles, and handle duplicate-key races with deliberate responses.
@@ -29,8 +29,8 @@ Before integrating auth routes, review these concrete gaps:
   flow. Email failure leaves the created account in the database.
 - `protect` calls `next()` before assigning `req.user`, then calls it again. Its blocked check
   uses `req.user` instead of the just-loaded user. Correct request attachment, blocked checks,
-  and middleware control flow before mounting it.
-- `authorizeRoles` lacks `next()` on the allowed path. Complete it before attaching it to routes.
+  and middleware control flow on the mounted profile route.
+- `authorizeRoles` calls `next()` on the allowed path but is not attached to any route.
 - Login checks verification and blocked flags but does not enforce `isApproved`.
 - Profile excludes only the password; restrict returned fields so token data stays internal.
 - There is no rate limiter, centralized application error middleware, or durable email queue.
@@ -42,7 +42,7 @@ These are documented implementation gaps; this documentation task does not fix t
 
 1. Complete registration validation, role authorization, and verification token handling.
 2. Correct auth middleware and define safe profile response fields.
-3. Mount and verify verification, login, and protected profile routes explicitly.
+3. Verify the mounted verification, login, and protected profile routes after correcting those gaps.
 4. Add client pages and API integration for the mounted flows, including password reset.
 5. Add focused automated tests, rate limits, and production configuration before public rollout.
 6. Define housing and roommate requirements before introducing their models and APIs.

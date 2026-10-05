@@ -23,7 +23,7 @@ Create `server/.env` locally:
 MONGO_URI=mongodb://127.0.0.1:27017/homieplace
 ```
 
-The entry loads dotenv. The database helper requires `MONGO_URI`, not `MONGODB_URI`. Password-reset email delivery requires `SMTP_USER` and `SMTP_PASS` for the Gmail transport, plus `CLIENT_URL` (for example `http://localhost:5173`). Production requires an HTTPS origin; HTTP loopback is allowed only outside production. The unmounted login controller uses `JWT_SECRET`. PORT, Cloudinary settings, and client VITE_* settings are not wired up.
+The entry loads dotenv. The database helper requires `MONGO_URI`, not `MONGODB_URI`. Password-reset email delivery requires `SMTP_USER` and `SMTP_PASS` for the Gmail transport, plus `CLIENT_URL` (for example `http://localhost:5173`). Production requires an HTTPS origin; HTTP loopback is allowed only outside production. Login and the profile authentication middleware use `JWT_SECRET`. PORT, Cloudinary settings, and client VITE_* settings are not wired up.
 
 Neither package includes an `.env.example`. Do not instruct contributors to copy a nonexistent template. When adding configuration, document its real consumer and provide placeholder-only examples where appropriate. Never commit local environment files or secrets.
 
@@ -46,7 +46,7 @@ Neither package includes an `.env.example`. Do not instruct contributors to copy
 
 **Do not run lint or build unless explicitly requested.** Listing commands is not authorization to execute them. Neither package has a test script; the server has no build or typecheck script.
 
-For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. The password-reset endpoints are mounted; see [API reference](api.md) for Postman requests, response codes, and validation. Registration is mounted but unfinished; login, profile, verification, and auth middleware remain unmounted. No frontend reset page or retained automated reset tests exist.
+For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. The password-reset endpoints are mounted; see [API reference](api.md) for Postman requests, response codes, and validation. Registration is mounted but unfinished; login, verification, and profile are mounted through `authRouter`. Profile uses the incomplete `protect` middleware; see [Implementation status](implementation-status.md). No frontend reset page or retained automated reset tests exist.
 
 Install the recommended Prettier and ESLint VS Code extensions. Prettier formats on save using the root configuration: 90-column target, two spaces, double quotes, semicolons, trailing commas, LF endings, and one JSX attribute per line. Editor word wrap remains at 100 columns. ESLint uses separate client/server working directories and validates JavaScript, TypeScript, and TSX; automatic ESLint fixes on save are not configured. Formatting excludes dependencies, build output, lockfiles, and environment files.
 

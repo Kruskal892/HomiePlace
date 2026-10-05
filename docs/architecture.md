@@ -21,7 +21,8 @@ use the User model and utility functions directly; no service or repository laye
 | `server/server.ts` | Environment loading, database startup, middleware, route mounting, listening |
 | `server/config/` | MongoDB connection |
 | `server/controller/` | HTTP handlers, request/response types, and barrel exports |
-| `server/middleware/` | Unmounted authentication and role middleware |
+| `server/middleware/` | Profile authentication and unattached role middleware |
+| `server/routes/` | Auth router and route barrel |
 | `server/models/` | User schema and named model exports |
 | `server/utils/` | Email, email validation, trusted links, and utility exports |
 | `server/utils/templates/` | Verification email HTML and template exports |
@@ -36,7 +37,7 @@ use the User model and utility functions directly; no service or repository laye
 
 Handlers and request/response interfaces live in `server/controller/`. The user schema in `server/models/user.model.ts` stores identity, unique email, bcrypt password hash, roles, account flags, verification/reset tokens, expiry, and timestamps. `server/utils/` contains Gmail delivery, verification email HTML, trusted client-link construction, and email validation.
 
-Each package has its own npm manifest and lockfile. The private root package uses concurrently to run the existing client/server development scripts with `npm --prefix`, preserving each package's working directory. Root Prettier configuration provides shared formatting with a 90-column target and one JSX attribute per line. Each package has an ESLint flat configuration; VS Code configures separate ESLint working directories and Prettier format on save. The server manifest still declares `main: server.js`; the runtime entry is `server.ts`. The server tsconfig uses NodeNext resolution for native aliases configured in package.json: `#controller`, `#utils`, `#templates`, and `#models` target barrels, while `#*` maps individual source paths to `./*.ts`. The client has no source aliases. There is no server typecheck script.
+Each package has its own npm manifest and lockfile. The private root package uses concurrently to run the existing client/server development scripts with `npm --prefix`, preserving each package's working directory. Root Prettier configuration provides shared formatting with a 90-column target and one JSX attribute per line. Each package has an ESLint flat configuration; VS Code configures separate ESLint working directories and Prettier format on save. The server manifest still declares `main: server.js`; the runtime entry is `server.ts`. The server tsconfig uses NodeNext resolution for native aliases configured in package.json: `#controller`, `#utils`, `#templates`, `#models`, `#middleware`, and `#routes` target barrels, while `#*` maps individual source paths to `./*.ts`. The client has no source aliases. There is no server typecheck script.
 
 ## Mounted routes
 
@@ -44,6 +45,9 @@ Each package has its own npm manifest and lockfile. The private root package use
 | --- | --- | --- |
 | GET | `/` | Returns `Hello World` |
 | POST | `/api/auth/register` | Runs registration and sends a verification OTP; validation and role authorization remain unfinished |
+| POST | `/api/auth/login` | Checks credentials and account flags, then signs a one-hour JWT |
+| POST | `/api/auth/verify-email` | Compares the OTP and marks the account verified |
+| GET | `/api/auth/profile` | Uses `protect`; request attachment and control flow remain incomplete |
 | POST | `/api/auth/forgot-password` | Accepts an email and processes reset delivery in the current process |
 | POST | `/api/auth/reset-password/:token` | Consumes a valid token and replaces the password hash |
 
@@ -63,11 +67,11 @@ Both handlers send `Cache-Control: no-store`. Reset does not issue a login token
 
 `buildClientUrl(path)` reads `CLIENT_URL`, requires an HTTPS origin without credentials, path, query, or fragment, and rejects resulting links outside that origin. HTTP localhost, 127.0.0.1, and IPv6 loopback are allowed outside production. Request headers never supply the reset-link origin.
 
-## Registration and unmounted auth controllers
+## Auth routing and controllers
 
 Registration validates email, hashes passwords, creates users, sends a six-digit OTP, and responds with user details. Role authorization and complete boundary validation remain unfinished; public registration must not grant privileged roles. Its OTP uses Math.random, and verification does not enforce expiry despite the email template mentioning ten minutes.
 
-Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Profile loads a user by `req.user.id`, excluding the password. Verification compares the stored OTP and marks the account verified. None of these handlers is mounted. `server/middleware/auth.middleware.ts` exports `protect` and `authorizeRoles`, but neither is mounted; authentication and role enforcement are not integrated into routes.
+Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Profile loads a user by `req.user.id`, excluding the password. Verification compares the stored OTP and marks the account verified. These handlers are mounted through `server/routes/auth.routes.ts`, with `authRouter` mounted at `/api/auth`. Profile uses `protect`, which still calls `next()` before attaching `req.user`, calls it twice, and checks blocked status on the wrong object. `authorizeRoles` is exported but not attached to any route.
 
 Socket.io, Cloudinary, Multer, and Streamifier are installed but not integrated.
 

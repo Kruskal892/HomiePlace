@@ -41,6 +41,11 @@ export interface LoginResponseBody {
   token?: string;
 }
 
+export interface VerifyEmailRequestBody {
+  email: string;
+  otp: string;
+}
+
 export interface ForgotPasswordRequestBody {
   email: string;
 }

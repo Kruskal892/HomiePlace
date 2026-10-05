@@ -42,10 +42,19 @@ backend reset request described in [API reference](api.md). A used or expired to
 For registration SMTP failure, the account already exists even though the response is 500;
 there is no resend endpoint yet.
 
-## Login, profile, or verification returns 404
+## Auth endpoint returns `Cannot POST` or 404
 
-These controllers are not mounted. Check [Implementation status](implementation-status.md)
-before adding routes; middleware and verification gaps need attention first.
+Use `http://localhost:5000/api/auth/...` and the method in [API reference](api.md).
+The router mount must include its leading slash: `app.use("/api/auth", authRouter)`.
+Check that the current server process restarted after route changes. Profile uses GET.
+Mounted routes still have the gaps listed in [Implementation status](implementation-status.md).
+
+## Auth router reports "No overload matches this call"
+
+Check the controller's first parameter. A body interface is not an Express request;
+use `Request<{}, {}, VerifyEmailRequestBody>` and read `req.body`.
+Use `AuthenticatedRequest extends Request` for middleware-added `req.user`.
+See [Express request typing](coding-standards.md#express-request-typing).
 
 ## Formatting or lint feedback is missing
 

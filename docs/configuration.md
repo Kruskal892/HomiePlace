@@ -11,7 +11,7 @@ so place local configuration in `server/.env`.
 | `SMTP_USER` | `server/utils/sendEmail.ts` | Gmail account used as SMTP identity and sender |
 | `SMTP_PASS` | `server/utils/sendEmail.ts` | Gmail app password for email delivery |
 | `CLIENT_URL` | `server/utils/buildClientUrl.ts` | Required for forgot-password link generation |
-| `JWT_SECRET` | Login controller and `protect` middleware | Required when those currently unmounted features are integrated |
+| `JWT_SECRET` | Login controller and `protect` middleware | Required for login and authenticated profile requests |
 | `NODE_ENV` | `server/utils/buildClientUrl.ts` | `production` disables HTTP loopback origins |
 
 Example values for local email workflows:
@@ -40,6 +40,8 @@ No `.env.example` exists. Environment files are ignored by Git and Prettier.
 | --- | --- |
 | `#controller` | `controller/index.ts` |
 | `#models` | `models/index.ts` |
+| `#middleware` | `middleware/index.ts` |
+| `#routes` | `routes/index.ts` |
 | `#utils` | `utils/index.ts` |
 | `#templates` | `utils/templates/index.ts` |
 | `#folder/file` | `folder/file.ts` through the `#*` wildcard |
@@ -51,8 +53,7 @@ import type { AuthenticatedRequest } from "#controller";
 ```
 
 Aliases omit the `.ts` suffix because the wildcard adds it. Relative runtime imports include
-the suffix, for example `./config/db.ts`. `#middleware` is not a configured bare alias;
-use `#middleware/auth.middleware` or `#middleware/index` for existing middleware exports.
+the suffix, for example `./config/db.ts`. `#middleware` and `#routes` resolve to their configured barrels.
 These aliases do not apply to the client, and require no runtime alias loader.
 
 ## Tool configuration
