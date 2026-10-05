@@ -9,6 +9,8 @@
     "#utils": "./utils/index.ts",
     "#templates": "./utils/templates/index.ts",
     "#models": "./models/index.ts",
+    "#middleware": "./middleware/index.ts",
+    "#routes": "./routes/index.ts",
     "#*": "./*.ts"
   },
   "scripts": {

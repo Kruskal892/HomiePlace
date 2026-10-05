@@ -1,9 +1,14 @@
 import express from "express";
+
 import cors from "cors";
+
 import "dotenv/config";
+
 import http from "http";
+
+import { authRouter } from "#routes";
+
 import { connectDB } from "./config/db.ts";
-import { forgotPassword, registerUser, resetPassword } from "./controller/auth.controller.ts";
 
 const app = express();
 const PORT = 5000;
@@ -16,11 +21,7 @@ app.use(express.json({ limit: "10kb" }));
 
 //Routes
 // Forgot password
-app.post("/api/auth/forgot-password", forgotPassword);
-// Reset password
-app.post("/api/auth/reset-password/:token", resetPassword);
-// Register user
-app.post("/api/auth/register", registerUser);
+app.use("/api/auth", authRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

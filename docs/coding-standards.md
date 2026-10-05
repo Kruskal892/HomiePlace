@@ -17,7 +17,7 @@ These are implementation rules, not claims that every feature exists. See [archi
 
 - Use TypeScript and ESM imports/exports, never CommonJS require.
 - Node runs TypeScript directly with type stripping. Use erasable syntax, explicit `.ts` extensions for relative runtime imports, and `import type` for types.
-- Use native server aliases from `server/package.json`: `#controller`, `#utils`, `#templates`, and `#models` resolve to their respective `index.ts` barrels. Use named exports and `import type` for types. The wildcard `"#*": "./*.ts"` supports extensionless individual-file imports such as `#middleware/auth.middleware`. TypeScript resolves these through the server's NodeNext configuration; no runtime alias loader is needed. These mappings do not apply to the client.
+- Use native server aliases from `server/package.json`: `#controller`, `#utils`, `#templates`, `#models`, `#middleware`, and `#routes` resolve to their respective `index.ts` barrels. Use named exports and `import type` for types. The wildcard `"#*": "./*.ts"` supports extensionless individual-file imports such as `#middleware/auth.middleware`. TypeScript resolves these through the server's NodeNext configuration; no runtime alias loader is needed. These mappings do not apply to the client.
 - Follow the server ESLint flat configuration: recommended JavaScript/TypeScript rules, Node globals, and explicit `any` errors. Use typed values or narrow `unknown`; ESLint is not a substitute for typechecking. Apply the shared root Prettier settings to server files as well.
 - Keep handlers in the existing `server/controller/`, models in `server/models/`, and configuration in `server/config/`.
 - Add route/middleware files only when needed and mount them explicitly. Exporting a handler does not expose an endpoint.
@@ -29,4 +29,43 @@ These are implementation rules, not claims that every feature exists. See [archi
 - Complete secure token generation, expiry, delivery, and verification before exposing token workflows. The registration OTP uses Math.random and has no enforced expiry; password-reset tokens use crypto.randomBytes, hashed storage, and a 15-minute expiry.
 - Native type stripping is not typechecking. Starting the server does not verify server type safety.
 
-Password reset and registration are mounted; login, profile, verification, and auth middleware remain unmounted. Sockets and uploads are not implemented. When adding them, enforce authorization at their trust boundaries and reuse installed dependencies where suitable.
+Registration, login, verification, password reset, and profile are mounted through `authRouter`.
+Profile uses `protect`; `authorizeRoles` is not attached to any route. Authentication still
+has the control-flow gaps listed in [Implementation status](implementation-status.md).
+Sockets and uploads are not implemented.
+
+## Express request typing
+
+Body interfaces describe JSON fields and do not extend `Request`. Supply them as the third
+Express `Request` generic (`params`, `response body`, `request body`) and read fields from
+`req.body`:
+
+```ts
+import type { Request, Response } from "express";
+import type { VerifyEmailRequestBody } from "#controller";
+
+const verifyEmail = async (
+  req: Request<{}, {}, VerifyEmailRequestBody>,
+  res: Response,
+) => {
+  const { email, otp } = req.body;
+  // Validate these values before querying or updating the database.
+};
+```
+
+Extend `Request` for properties added to the request itself by middleware:
+
+```ts
+export interface AuthenticatedRequest extends Request {
+  user?: { id: string; isBlocked?: boolean; role: string };
+}
+```
+
+`getUserProfile` accepts `AuthenticatedRequest` because it retains Express request fields
+and adds `req.user`. The optional property also allows requests before authentication.
+The `protect` middleware must attach the user before calling `next()` once; interfaces
+do not create runtime properties or validate HTTP input.
+
+Typing a handler's `req` directly as `VerifyEmailRequestBody` makes it incompatible with
+Express and can produce the misleading `Application` / "No overload matches this call"
+error at `authRouter.post(...)`.

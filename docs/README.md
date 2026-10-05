@@ -22,7 +22,8 @@ Housing, roommate, and messaging features are not implemented yet.
 | [Troubleshooting](troubleshooting.md) | Startup, database, email, alias, and editor issues |
 
 These guides describe the checked-in source and current local changes, not a deployed service.
-Route availability comes from [server/server.ts](../server/server.ts); exporting a controller
+Route availability comes from [server/server.ts](../server/server.ts) and
+[authRouter](../server/routes/auth.routes.ts); exporting a controller
 does not create a route. Update the relevant guide whenever routes, configuration, scripts,
 schema fields, or implementation status change.
 

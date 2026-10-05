@@ -74,7 +74,7 @@ export const authorizeRoles = (...roles: string[]) => {
   return (
     req: AuthenticatedRequest,
     res: Response<AuthErrorResponseBody>,
-    // next: NextFunction,
+    next: NextFunction,
   ) => {
     if (!req.user) {
       return res.status(401).json({ message: "Not authorized" });
@@ -85,5 +85,6 @@ export const authorizeRoles = (...roles: string[]) => {
         .status(403)
         .json({ message: "Forbidden: You do not have access to this resource" });
     }
+    next();
   };
 };
