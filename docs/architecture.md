@@ -21,8 +21,8 @@ use the User model and utility functions directly; no service or repository laye
 | `server/server.ts` | Environment loading, database startup, middleware, route mounting, listening |
 | `server/config/` | MongoDB connection |
 | `server/controller/` | HTTP handlers, request/response types, and barrel exports |
-| `server/middleware/` | Profile authentication and unattached role middleware |
-| `server/routes/` | Auth router and route barrel |
+| `server/middleware/` | Profile authentication, unattached role middleware, and Multer memory storage |
+| `server/routes/` | Auth and user routers with shared barrel exports |
 | `server/models/` | User schema and named model exports |
 | `server/utils/` | Email, email validation, trusted links, and utility exports |
 | `server/utils/templates/` | Verification email HTML and template exports |
@@ -47,7 +47,10 @@ Each package has its own npm manifest and lockfile. The private root package use
 | POST | `/api/auth/register` | Runs registration and sends a verification OTP; validation and role authorization remain unfinished |
 | POST | `/api/auth/login` | Checks credentials and account flags, then signs a one-hour JWT |
 | POST | `/api/auth/verify-email` | Compares the OTP and marks the account verified |
-| GET | `/api/auth/profile` | Uses `protect`; returns the auth-module profile |
+| GET | `/api/auth/profile` | Uses `protect`; returns the user-module selected profile fields |
+| GET | `/api/users/profile` | Protected selected profile fields |
+| PUT | `/api/users/profile` | Protected profile update and optional avatar upload |
+| GET | `/api/users/profile/:id` | Public selected profile fields by MongoDB ID |
 | POST | `/api/auth/forgot-password` | Accepts an email and processes reset delivery in the current process |
 | POST | `/api/auth/reset-password/:token` | Consumes a valid token and replaces the password hash |
 
@@ -71,9 +74,9 @@ Both handlers send `Cache-Control: no-store`. Reset does not issue a login token
 
 Registration validates email, hashes passwords, creates users, sends a six-digit OTP, and responds with user details. Role authorization and complete boundary validation remain unfinished; public registration must not grant privileged roles. Its OTP uses Math.random, and verification does not enforce expiry despite the email template mentioning ten minutes.
 
-Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Profile loads a user by `req.user.id`, excluding the password. Verification compares the stored OTP and marks the account verified. These handlers are mounted through `server/routes/auth.routes.ts`, with `authRouter` mounted at `/api/auth`. Profile uses `protect`, which checks the loaded user for blocked status and attaches `req.user` before calling `next()` once. A separate user-module controller is mounted at `GET /api/users/profile`. `authorizeRoles` is exported but not attached to any route.
+Login checks password and account flags and signs a one-hour JWT using `JWT_SECRET`. Both mounted profile-read endpoints load a user by `req.user.id` and select identity, contact, avatar, role, and timestamp fields. The renamed auth-module `getUserDetail` remains exported but unmounted. Verification compares the stored OTP and marks the account verified. These handlers are mounted through `server/routes/auth.routes.ts`, with `authRouter` mounted at `/api/auth`. Profile uses `protect`, which checks the loaded user for blocked status and attaches `req.user` before calling `next()` once. A separate user-module controller is mounted at `GET /api/users/profile`. `authorizeRoles` is exported but not attached to any route.
 
-Socket.io, Cloudinary, Multer, and Streamifier are installed but not integrated.
+Profile updates run `protect`, then `upload.single("avatar")` using Multer memory storage. The user controller validates optional name, phone, and address fields, uploads a supplied buffer through Streamifier to Cloudinary, and saves its secure URL. `removeAvatar` clears the URL only for the exact string `"true"` when no file is supplied. Public lookup validates the ID and selects name, avatar, role, and creation time. Upload size/type limits and Cloudinary asset cleanup are absent. Socket.io remains installed but unintegrated.
 
 See [API reference](api.md) for contracts, [Data model](data-model.md) for persistence,
 and [Implementation status](implementation-status.md) for specific integration gaps.

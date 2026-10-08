@@ -23,7 +23,7 @@ client or server dependencies. Keep dependency changes in the package that consu
 
 ## Configure the server
 
-Create `server/.env` locally. There is no `.env.example` to copy.
+Copy [server/.env.example](../server/.env.example) to `server/.env`, then fill in the keys needed for your workflow. The template includes every environment variable used by the backend.
 
 ```dotenv
 MONGO_URI=mongodb://127.0.0.1:27017/homieplace
@@ -31,7 +31,7 @@ MONGO_URI=mongodb://127.0.0.1:27017/homieplace
 
 This is enough to start the server when MongoDB is reachable. Add SMTP credentials and
 `CLIENT_URL` for email workflows; see [Configuration](configuration.md). Keep secrets out of Git.
-The client currently needs no environment variables.
+Add `JWT_SECRET` for login and protected profile requests, and `CLOUD_NAME`, `CLOUD_KEY`, and `CLOUD_SECRET` for avatar uploads. The client currently needs no environment variables.
 
 ## Start development
 

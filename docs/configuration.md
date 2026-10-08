@@ -3,7 +3,7 @@
 ## Environment variables
 
 The server entry loads `dotenv/config`. Package development scripts run from `server/`,
-so place local configuration in `server/.env`.
+so copy [server/.env.example](../server/.env.example) to `server/.env` and fill in the keys required for the features you use. Empty values in the example need your local credentials or secret.
 
 | Variable | Consumer | Requirement |
 | --- | --- | --- |
@@ -12,24 +12,31 @@ so place local configuration in `server/.env`.
 | `SMTP_PASS` | `server/utils/sendEmail.ts` | Gmail app password for email delivery |
 | `CLIENT_URL` | `server/utils/buildClientUrl.ts` | Required for forgot-password link generation |
 | `JWT_SECRET` | Login controller and `protect` middleware | Required for login and authenticated profile requests |
+| `CLOUD_NAME` | `server/config/cloudinary.ts` | Cloudinary cloud name for avatar uploads |
+| `CLOUD_KEY` | `server/config/cloudinary.ts` | Cloudinary API key for avatar uploads |
+| `CLOUD_SECRET` | `server/config/cloudinary.ts` | Cloudinary API secret for avatar uploads |
 | `NODE_ENV` | `server/utils/buildClientUrl.ts` | `production` disables HTTP loopback origins |
 
-Example values for local email workflows:
+Placeholder values for local auth, email, and avatar workflows:
 
 ```dotenv
 MONGO_URI=mongodb://127.0.0.1:27017/homieplace
 SMTP_USER=your-gmail-address@gmail.com
 SMTP_PASS=replace-with-your-local-app-password
 CLIENT_URL=http://localhost:5173
+JWT_SECRET=replace-with-a-long-random-local-secret
+CLOUD_NAME=replace-with-your-cloud-name
+CLOUD_KEY=replace-with-your-cloudinary-api-key
+CLOUD_SECRET=replace-with-your-cloudinary-api-secret
 ```
 
 `CLIENT_URL` must be an HTTPS origin without credentials, a path, query, or fragment.
 Outside production, HTTP localhost, 127.0.0.1, and IPv6 loopback origins are allowed.
 Reset links never derive their origin from request headers.
 
-`PORT`, Cloudinary configuration, and client `VITE_*` variables are not wired up.
+Cloudinary configuration loads the three `CLOUD_*` variables above; they are needed when uploading avatars, not for text-only updates. `PORT` and client `VITE_*` variables are not wired up.
 The server listens on 5000; Vite normally uses 5173 and has no API proxy configured.
-No `.env.example` exists. Environment files are ignored by Git and Prettier.
+Local environment files are ignored by Git and Prettier; `.env.example` is explicitly allowed by Git and contains no credentials.
 
 ## Server aliases
 

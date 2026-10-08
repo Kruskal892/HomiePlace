@@ -12,7 +12,7 @@ through `#models`. MongoDB persistence uses Mongoose; no migration or seed scrip
 | `password` | String | Required; controllers store bcrypt hashes |
 | `role` | String | `user`, `manager`, or `admin`; defaults to `user` |
 | `phone` | String | Optional |
-| `avatar` | String | Optional; upload handling is not integrated |
+| `avatar` | String | Optional Cloudinary secure URL; profile removal sets null |
 | `address` | String | Optional |
 | `isBlocked` | Boolean | Defaults to `false` |
 | `isApproved` | Boolean | Schema default `true`; registration sets `false` for manager input |
@@ -33,6 +33,8 @@ and future expiry. It replaces the password and removes the token fields togethe
 prevents the same token from being consumed twice. Failed email cleanup matches the stored
 hash before removing fields, preserving a newer request's token.
 
+Profile updates save only name, phone, address, and an uploaded avatar URL (or null on removal). The controller trims text fields and leaves role, email, and password unchanged. Cloudinary asset deletion is not implemented.
+
 There is no TTL index, verification-expiry field, housing schema, or roommate schema.
 Expired reset fields may remain stored until replaced or cleared; expiry is checked during reset.
 
@@ -42,4 +44,4 @@ Validate HTTP input at runtime before persistence. A TypeScript interface or Mon
 does not authorize public input to select an admin role. Preserve uniqueness and timestamps,
 handle duplicate-key errors deliberately, and define response fields explicitly. Excluding
 only `password` from a query still leaves token and other internal fields available; profile
-response filtering remains unfinished. Never include credential or token values in logs.
+reads and updates use explicit selected fields. The exported, unmounted `getUserDetail` handler still excludes only the password. Never include credential or token values in logs.

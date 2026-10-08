@@ -1,7 +1,7 @@
 # HomiePlace developer documentation
 
 HomiePlace aims to support shared housing, room finding, and roommate collaboration.
-The current implementation is a frontend scaffold and a small Express authentication backend.
+The current implementation is a frontend scaffold and a small Express authentication and user-profile backend with Cloudinary avatar uploads.
 Housing, roommate, and messaging features are not implemented yet.
 
 ## Start here
@@ -23,7 +23,7 @@ Housing, roommate, and messaging features are not implemented yet.
 
 These guides describe the checked-in source and current local changes, not a deployed service.
 Route availability comes from [server/server.ts](../server/server.ts) and
-[authRouter](../server/routes/auth.routes.ts); exporting a controller
+[authRouter](../server/routes/auth.routes.ts) and [userRouter](../server/routes/user.routes.ts); exporting a controller
 does not create a route. Update the relevant guide whenever routes, configuration, scripts,
 schema fields, or implementation status change.
 

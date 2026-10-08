@@ -32,7 +32,7 @@ These are implementation rules, not claims that every feature exists. See [archi
 Registration, login, verification, password reset, and profile are mounted through `authRouter`.
 Profile uses `protect`; `authorizeRoles` is not attached to any route. `protect` checks blocked status and attaches `req.user` before continuing once. Remaining
 auth gaps are listed in [Implementation status](implementation-status.md).
-Sockets and uploads are not implemented.
+The user router mounts protected profile updates with Multer memory storage and public profile lookup. Cloudinary avatar uploads are integrated; size/type limits and asset cleanup are not. Sockets remain unimplemented.
 
 ## Express request typing
 

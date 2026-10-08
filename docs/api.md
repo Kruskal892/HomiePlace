@@ -1,9 +1,10 @@
 # API reference
 
 Local base URL: `http://localhost:5000`. [server/server.ts](../server/server.ts) mounts
-[authRouter](../server/routes/auth.routes.ts) at `/api/auth`.
+[authRouter](../server/routes/auth.routes.ts) at `/api/auth` and
+[userRouter](../server/routes/user.routes.ts) at `/api/users`.
 JSON requests use `Content-Type: application/json`; the parser limits bodies to 10 KB.
-Both profile routes use `protect`; the remaining auth routes do not use authentication middleware.
+Profile reads without an ID and profile updates use `protect`. Public profile lookup and the remaining auth routes do not use authentication middleware. The JSON size limit does not apply to multipart uploads.
 
 | Method | Route | Current behavior |
 | --- | --- | --- |
@@ -11,8 +12,10 @@ Both profile routes use `protect`; the remaining auth routes do not use authenti
 | POST | `/api/auth/register` | Create an account and send a verification OTP |
 | POST | `/api/auth/login` | Check credentials and account flags, then issue a one-hour JWT |
 | POST | `/api/auth/verify-email` | Compare the OTP and mark the account verified |
-| GET | `/api/auth/profile` | Existing auth-module profile handler with `protect` |
+| GET | `/api/auth/profile` | Same user-module profile handler as `/api/users/profile`, with `protect` |
 | GET | `/api/users/profile` | User-module profile handler with `protect`; returns selected profile fields, 401 without a user, and 404 when not found |
+| PUT | `/api/users/profile` | Protected profile update with optional `avatar` file |
+| GET | `/api/users/profile/:id` | Public lookup of selected profile fields |
 | POST | `/api/auth/forgot-password` | Accept a reset request and attempt email delivery |
 | POST | `/api/auth/reset-password/:token` | Consume an unexpired token and replace the password |
 
@@ -71,19 +74,49 @@ The OTP uses `Math.random`; expiry mentioned in the email is not enforced.
    Success returns 200 with a JWT in `token`. Login requires `JWT_SECRET`; unverified or
    blocked accounts return 403, and invalid credentials return 400.
 3. Submit `GET /api/auth/profile` with `Authorization: Bearer <token>`.
-   The controller returns `{ "success": true, "user": ... }`, excluding only the password.
+   The controller returns `{ "success": true, "user": ... }`, with selected identity, contact, avatar, role, and timestamp fields; password and token fields are excluded.
 
 To test the user-module controller, use `GET http://localhost:5000/api/users/profile` in
 Postman, select Authorization ? Bearer Token, and paste the login response token. No request
 body is needed. Without a token, expect 401; blocked users receive 403. `JWT_SECRET` must
 be configured. The user-module controller returns only identity, contact, avatar, role,
-and timestamp fields. The older auth-module controller still excludes only the password.
+and timestamp fields. Both mounted profile-read routes resolve to this handler through
+`#controller`. The renamed auth-module `getUserDetail` handler is exported but unmounted.
 
-The user module also contains public-profile and update controllers, which are not mounted
-yet. Public lookup validates a MongoDB ID and selects `name`, `avatar`, `role`, and `createdAt`.
-Update validates optional string fields `name`, `phone`, and `address`, requires an authenticated
-user, and accepts an avatar only through `req.file.buffer` from Multer memory storage.
-It does not accept role changes or avatar URLs from the request body.
+## Update profile
+
+In Postman, send `PUT http://localhost:5000/api/users/profile` with Authorization set to
+Bearer Token. Select Body > form-data and add any of these fields:
+
+| Key | Postman type | Behavior |
+| --- | --- | --- |
+| `name` | Text | Optional nonblank string, trimmed before saving |
+| `phone` | Text | Optional string, trimmed before saving |
+| `address` | Text | Optional string, trimmed before saving |
+| `avatar` | File | Optional file uploaded to Cloudinary's `avatars` folder |
+| `removeAvatar` | Text | Exact string `true` clears the stored avatar when no file is supplied |
+
+Let Postman set the multipart Content-Type and boundary. For updates without a file, JSON
+is also supported; avatar removal requires `"removeAvatar": "true"`, not boolean `true`.
+A file takes precedence over removal. Role, email, password, and avatar URL fields are not
+updated from the body. Uploads require `CLOUD_NAME`, `CLOUD_KEY`, and `CLOUD_SECRET`.
+
+Success returns 200 with `{ "success": true, "message": "Profile updated successfully", "user": ... }`.
+Invalid profile data returns 400, missing users return 404, and upload/save failures return
+500. Authentication returns 401 for absent/invalid tokens, 403 for blocked users, and 500
+when `JWT_SECRET` is missing. Middleware errors have no custom JSON envelope.
+
+Multer buffers files in memory without size or type limits. The 10 KB JSON limit does not
+limit these uploads. Replacing or removing an avatar does not delete its Cloudinary asset;
+an upload followed by a failed database save can also leave an unused asset.
+
+## Public profile
+
+Send `GET http://localhost:5000/api/users/profile/<id>` without authentication or a body.
+Success returns 200 with `{ "success": true, "user": ... }`, selecting `name`, `avatar`,
+`role`, and `createdAt` (plus MongoDB `_id`). Invalid MongoDB IDs return 400, nonexistent
+users return 404, and lookup errors return 500. This route does not filter by blocked,
+approved, or verified status.
 
 ## Forgot password
 

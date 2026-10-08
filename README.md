@@ -28,11 +28,12 @@ HomiePlace/
     public/            Public assets
     src/               Application source and styles
   server/              Express backend
-    config/            Database configuration
+    config/            Database and Cloudinary configuration
     controller/        Request handlers and related types
-    middleware/        Authentication and role middleware (not mounted)
+    middleware/        Authentication, role, and memory upload middleware
+    routes/            Mounted auth and user routers
     models/            Mongoose schemas
-    utils/             Email delivery, templates, client links, and email validation
+    utils/             Email delivery, templates, client links, validation, and uploads
     server.ts          Server entry point
   .agent/              Architecture, coding standards, and workflows
   docs/                Shared developer documentation and onboarding
@@ -60,11 +61,13 @@ The `imports` field in `server/package.json` defines native Node aliases. TypeSc
 | `#utils` | `server/utils/index.ts` |
 | `#templates` | `server/utils/templates/index.ts` |
 | `#models` | `server/models/index.ts` |
+| `#middleware` | `server/middleware/index.ts` |
+| `#routes` | `server/routes/index.ts` |
 | `#*` | `server/*.ts`, including nested paths |
 
 Use named barrel exports, for example `import { User } from "#models"`, and `import type` for types, such as `import type { AuthenticatedRequest } from "#controller"`. For individual files, use extensionless imports such as `#utils/isValidEmail` or `#middleware/auth.middleware`. Relative runtime imports still require `.ts` extensions. These aliases apply only to the server; the client has no configured source aliases.
 
-The client currently displays a placeholder. The backend exposes `GET /`, the two password-reset endpoints described below, and `POST /api/auth/register`. Registration validation and role authorization remain unfinished. Login, profile, email verification, and authentication middleware are not mounted.
+The client currently displays a placeholder. The backend mounts registration, login, email verification, password reset, protected profile reads and updates, and public profile lookup. Avatar uploads use Multer memory storage and Cloudinary. Registration validation and role authorization remain unfinished; see the [API reference](docs/api.md) and [implementation status](docs/implementation-status.md).
 
 ## Getting started
 
@@ -88,7 +91,7 @@ cd server
 npm ci
 ```
 
-Create a `.env` file in `server/` and add your MongoDB connection URI:
+Copy `server/.env.example` to `server/.env`, then fill in the keys needed for your workflow. Set your MongoDB connection URI:
 
 ```dotenv
 MONGO_URI=mongodb://127.0.0.1:27017/homieplace
@@ -107,7 +110,7 @@ SMTP_USER=your-gmail-address@gmail.com
 SMTP_PASS=your-gmail-app-password
 ```
 
-Registration is mounted at `POST /api/auth/register`; email verification remains unmounted. The `verifyEmail` controller checks the OTP and marks the account as verified, but OTP expiry enforcement is not implemented.
+Registration and email verification are mounted at `POST /api/auth/register` and `POST /api/auth/verify-email`. The `verifyEmail` controller checks the OTP and marks the account as verified, but OTP expiry enforcement is not implemented.
 
 #### Password reset
 
@@ -166,7 +169,7 @@ A successful reset returns `200`:
 }
 ```
 
-Resetting does not log the user in or change account approval, verification, or blocked status. The login controller remains unmounted.
+Resetting does not log the user in or change account approval, verification, or blocked status. Login is available at `POST /api/auth/login` and requires `JWT_SECRET`.
 
 | Endpoint | Error status | Meaning |
 | --- | --- | --- |
@@ -180,6 +183,10 @@ Both endpoints send `Cache-Control: no-store`. JSON request bodies are limited t
 The shared `isValidEmail` helper checks string input, a maximum length of 254 characters, and basic email syntax before queries in registration, login, verification, and forgot-password. It does not normalize addresses or prove mailbox ownership. `buildClientUrl(path)` rejects links outside the configured origin.
 
 Rate limiting is deferred. Add per-IP and per-email limits before exposing the endpoints publicly. There is currently no password-reset test file or frontend reset page.
+
+#### Profiles and avatar uploads
+
+Set `JWT_SECRET` for login and authenticated profile requests. Avatar uploads additionally require `CLOUD_NAME`, `CLOUD_KEY`, and `CLOUD_SECRET` in `server/.env`; see [Configuration](docs/configuration.md). Use `GET` and `PUT /api/users/profile` with a Bearer token, and `GET /api/users/profile/:id` for public lookup. The [API reference](docs/api.md#update-profile) includes Postman form-data instructions. Uploads currently have no size or file-type limits, and replacing or removing an avatar does not delete the old Cloudinary asset.
 
 #### Start the server
 
