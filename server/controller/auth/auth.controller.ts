@@ -130,7 +130,7 @@ export const loginUser = async (
 };
 
 // Get user profile
-export const getUserProfile = async (
+export const getUserDetail = async (
   req: AuthenticatedRequest,
   res: Response,
 ): Promise<Response | void> => {
