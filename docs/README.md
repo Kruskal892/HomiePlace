@@ -2,7 +2,7 @@
 
 HomiePlace aims to support shared housing, room finding, and roommate collaboration.
 The current implementation is a frontend scaffold and a small Express authentication and user-profile backend with Cloudinary avatar uploads.
-Housing, roommate, and messaging features are not implemented yet.
+Accommodation schemas exist; booking APIs, roommate features, and messaging are not implemented yet.
 
 ## Start here
 
@@ -16,7 +16,8 @@ Housing, roommate, and messaging features are not implemented yet.
 | Guide | What it covers |
 | --- | --- |
 | [API reference](api.md) | Mounted endpoints, payloads, responses, and manual API checks |
-| [Data model](data-model.md) | User fields, defaults, indexes, and token storage |
+| [Data model](data-model.md) | User and accommodation persistence rules |
+| [Accommodation schema](accommodation-schema.md) | Relationship diagrams, room pricing, inventory, and booking examples |
 | [Configuration](configuration.md) | Environment variables, ports, and server import aliases |
 | [Implementation status](implementation-status.md) | Existing features, incomplete auth behavior, and next integration steps |
 | [Troubleshooting](troubleshooting.md) | Startup, database, email, alias, and editor issues |

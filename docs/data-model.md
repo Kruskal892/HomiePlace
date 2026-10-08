@@ -1,6 +1,6 @@
 # Data model
 
-The only current application model is `User`, defined in
+The user model is `User`, defined in
 [server/models/user.model.ts](../server/models/user.model.ts) and exported as a named value
 through `#models`. MongoDB persistence uses Mongoose; no migration or seed script exists.
 
@@ -35,8 +35,44 @@ hash before removing fields, preserving a newer request's token.
 
 Profile updates save only name, phone, address, and an uploaded avatar URL (or null on removal). The controller trims text fields and leaves role, email, and password unchanged. Cloudinary asset deletion is not implemented.
 
-There is no TTL index, verification-expiry field, housing schema, or roommate schema.
+There is no TTL index, verification-expiry field, or roommate schema.
 Expired reset fields may remain stored until replaced or cleared; expiry is checked during reset.
+
+## Property model
+
+`Property` is defined in `server/models/property.model.ts` and exported through `#models`.
+It describes an accommodation establishment, not an individual room or booking.
+
+- Required: trimmed title (up to 200 characters), description (up to 10,000),
+  property type, structured address, timezone, and a manager reference to `User`.
+- Types: hotel, homestay, resort, hostel, guesthouse, apartment, villa, and house.
+- Address: addressLine, city, province, and country are required; area and postalCode
+  are optional. Postal codes remain strings to preserve leading zeroes.
+- Amenities are trimmed, nonempty strings. Images are HTTPS URLs without credentials.
+- `areaSize` is an optional Number. The schema currently defines no measurement unit,
+  minimum, or integer constraint; it does not reject negative values.
+- Status: draft (default), published, or archived. Verification defaults to false.
+- Views default to zero and must be a nonnegative safe integer. `viewedBy` is an
+  array of strings with no identity format, uniqueness, or size constraint. It has
+  no enforced relationship to the views counter. Creation/update timestamps are enabled.
+
+The earlier unexported draft's sale price, room dimensions, furnishing, seller,
+and sale/sold statuses are replaced by this accommodation model; property-level
+areaSize and viewedBy are present in the current schema. Existing draft-shaped
+documents, if stored externally, need migration before use; no migration is run here.
+
+Room capacity, inventory, nightly pricing/currency, and saved reservations are modeled
+by RoomType, DailyInventory, and Booking. See [the accommodation diagram and field
+rules](accommodation-schema.md). Property also requires a valid timezone.
+See [why the property needs a timezone](accommodation-schema.md#why-timezone-is-stored-on-the-property)
+for local stay dates, check-in times, and booking cutoffs.
+No property API or booking flow exists yet.
+Future controllers must validate input, check manager existence and permissions, and
+restrict verification changes to authorized staff. A User reference does not enforce
+these rules. Publication requirements must be enforced before publishing a listing.
+
+Run the database-free validation checks from `server/`:
+`node --experimental-strip-types --test tests/property.model.test.ts`.
 
 ## When extending the model
 
