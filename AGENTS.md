@@ -11,7 +11,7 @@ Read these guides before proposing or changing code:
 
 - Client: React 19, TypeScript, Vite 8, Tailwind v4, and BrowserRouter around a placeholder.
 - Server: TypeScript executed directly by Node.js, ESM, Express 5, and Mongoose. The entry is `server/server.ts`; `GET /`, registration, and the forgot/reset-password POST endpoints are mounted.
-- Registration is mounted at `POST /api/auth/register` but remains unfinished. Login, profile, verification, and auth middleware remain unmounted. Login uses JWT; Socket.io and uploads are not integrated.
+- Registration is mounted at `POST /api/auth/register` but remains unfinished. Login, verification, and protected profile reads are mounted. `PUT /api/users/profile` supports profile updates and Cloudinary avatar uploads; `GET /api/users/profile/:id` exposes selected public fields. Role middleware remains unattached, and Socket.io is not integrated.
 - Use TypeScript and import/export; never CommonJS or client `any`.
 - Keep client/server code and npm commands within their respective packages.
 - Never stage or commit node_modules, local environment files, credentials, or build output.

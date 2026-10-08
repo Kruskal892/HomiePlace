@@ -17,15 +17,15 @@ Packages have separate manifests and lockfiles. The root runner starts both apps
 
 ## Environment
 
-Create `server/.env` locally:
+Copy [server/.env.example](../server/.env.example) to `server/.env` and fill in the required values. For local MongoDB:
 
 ```dotenv
 MONGO_URI=mongodb://127.0.0.1:27017/homieplace
 ```
 
-The entry loads dotenv. The database helper requires `MONGO_URI`, not `MONGODB_URI`. Password-reset email delivery requires `SMTP_USER` and `SMTP_PASS` for the Gmail transport, plus `CLIENT_URL` (for example `http://localhost:5173`). Production requires an HTTPS origin; HTTP loopback is allowed only outside production. Login and the profile authentication middleware use `JWT_SECRET`. PORT, Cloudinary settings, and client VITE_* settings are not wired up.
+The entry loads dotenv. The database helper requires `MONGO_URI`, not `MONGODB_URI`. Password-reset email delivery requires `SMTP_USER` and `SMTP_PASS` for the Gmail transport, plus `CLIENT_URL` (for example `http://localhost:5173`). Production requires an HTTPS origin; HTTP loopback is allowed only outside production. Login and the profile authentication middleware use `JWT_SECRET`. Avatar uploads use `CLOUD_NAME`, `CLOUD_KEY`, and `CLOUD_SECRET`; see [Configuration](configuration.md). PORT and client VITE_* settings are not wired up.
 
-Neither package includes an `.env.example`. Do not instruct contributors to copy a nonexistent template. When adding configuration, document its real consumer and provide placeholder-only examples where appropriate. Never commit local environment files or secrets.
+The server provides `server/.env.example`; the client currently needs no environment template. Keep the example and configuration guide aligned with actual consumers when adding keys. Never commit local environment files or secrets.
 
 ## Commands and verification
 
@@ -46,7 +46,7 @@ Neither package includes an `.env.example`. Do not instruct contributors to copy
 
 **Do not run lint or build unless explicitly requested.** Listing commands is not authorization to execute them. Neither package has a test script; the server has no build or typecheck script.
 
-For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. The password-reset endpoints are mounted; see [API reference](api.md) for Postman requests, response codes, and validation. Registration is mounted but unfinished; login, verification, and profile are mounted through `authRouter`. Profile uses `protect`; the user-module handler is also mounted at `/api/users/profile`; see [Implementation status](implementation-status.md). No frontend reset page or retained automated reset tests exist.
+For documentation changes, verify links, paths, scripts, and claims against source, then run `git diff --check`. This does not establish runtime correctness. For an already-running application, the client displays "App" and `GET http://localhost:5000/` returns `Hello World`. The password-reset endpoints are mounted; see [API reference](api.md) for Postman requests, response codes, and validation. Registration is mounted but unfinished; login, verification, and profile are mounted through `authRouter`. Profile uses `protect`; the user router also mounts protected `GET`/`PUT /api/users/profile` and public `GET /api/users/profile/:id`; see [Implementation status](implementation-status.md). No frontend reset page or retained automated reset tests exist.
 
 Install the recommended Prettier and ESLint VS Code extensions. Prettier formats on save using the root configuration: 90-column target, two spaces, double quotes, semicolons, trailing commas, LF endings, and one JSX attribute per line. Editor word wrap remains at 100 columns. ESLint uses separate client/server working directories and validates JavaScript, TypeScript, and TSX; automatic ESLint fixes on save are not configured. Formatting excludes dependencies, build output, lockfiles, and environment files.
 
@@ -78,8 +78,6 @@ documentation. For documentation-only edits, checking links and `git diff --chec
 documented baseline; do not claim that formatting, lint, build, or runtime checks passed
 unless they were actually run.
 
-## Focused profile check
+## Manual profile checks
 
-From `server/`, run `node --experimental-strip-types tests/user-profile.test.mjs`.
-This checks missing-token rejection, user attachment, and blocked-user rejection using
-a stubbed database lookup. It does not verify MongoDB, login, or email delivery.
+Follow the [API reference](api.md#update-profile) with MongoDB, `JWT_SECRET`, and a valid login token. Verify protected reads, text updates, avatar upload/removal, missing-token rejection, and public lookup with valid, invalid, and nonexistent IDs. Upload checks additionally require Cloudinary credentials and mutate account data and cloud assets. No retained profile test file or package test script exists; record only checks actually performed.

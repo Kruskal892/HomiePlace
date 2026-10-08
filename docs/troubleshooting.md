@@ -7,7 +7,7 @@ Check `node --version` and dependency engine requirements. The runtime executes 
 directly using `node --experimental-strip-types`; Node type stripping does not typecheck code.
 Avoid syntax that needs compilation, such as TypeScript enums or parameter properties.
 
-For `MONGO_URI is missing`, create `server/.env` with that exact variable name.
+For `MONGO_URI is missing`, copy `server/.env.example` to `server/.env` and set that exact variable name.
 For connection failures, check MongoDB availability, credentials, and Atlas network access.
 The server intentionally waits for the connection before listening on 5000.
 
@@ -46,8 +46,25 @@ there is no resend endpoint yet.
 
 Use `http://localhost:5000/api/auth/...` and the method in [API reference](api.md).
 The router mount must include its leading slash: `app.use("/api/auth", authRouter)`.
-Check that the current server process restarted after route changes. Profile uses GET.
+Check that the current server process restarted after route changes. Profile reads use GET; updates use PUT at `/api/users/profile`. Public lookup uses GET at `/api/users/profile/:id`.
 Mounted routes still have the gaps listed in [Implementation status](implementation-status.md).
+
+## Profile updates or avatar uploads fail
+
+Use `PUT /api/users/profile` with a Bearer token. Missing `JWT_SECRET` returns 500;
+absent/invalid tokens return 401 and blocked accounts return 403. For an avatar, use Postman
+Body > form-data with a File field named `avatar`; let Postman set the multipart boundary.
+Check `CLOUD_NAME`, `CLOUD_KEY`, and `CLOUD_SECRET` locally without printing credentials.
+Text-only updates do not need Cloudinary credentials. Invalid profile fields return 400.
+
+To remove an avatar, send the exact string `removeAvatar=true` without a file. JSON boolean
+`true` does not trigger removal, and a file takes precedence. Removal only clears the database
+URL; old Cloudinary assets remain. Uploads have no size/type limits and middleware errors
+may use Express's default response rather than the controller's JSON format.
+
+Both `/api/auth/profile` and `/api/users/profile` currently use the user-module read handler.
+Public lookup requires a valid MongoDB ID and exposes only public profile fields; see
+[API reference](api.md#public-profile).
 
 ## Auth router reports "No overload matches this call"
 
