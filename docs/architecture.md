@@ -23,7 +23,8 @@ use the User model and utility functions directly; no service or repository laye
 | `server/controller/` | HTTP handlers, request/response types, and barrel exports |
 | `server/middleware/` | Profile authentication, unattached role middleware, and Multer memory storage |
 | `server/routes/` | Auth and user routers with shared barrel exports |
-| `server/models/` | User schema and named model exports |
+| `server/models/` | User, Property, RoomType, DailyInventory, and Booking schemas with named model exports |
+| `server/tests/` | Database-free schema validation tests |
 | `server/utils/` | Email, email validation, trusted links, and utility exports |
 | `server/utils/templates/` | Verification email HTML and template exports |
 | `docs/` | Shared developer reference |
