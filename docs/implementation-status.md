@@ -6,7 +6,7 @@ This is a source-based inventory, not evidence of deployment or successful runti
 | --- | --- |
 | Frontend | React placeholder wrapped in BrowserRouter; no pages, API calls, or route definitions |
 | Styling | Tailwind v4 CSS import and Vite plugin enabled |
-| Database | MongoDB connection awaited before listening; User, Property, RoomType, DailyInventory, and Booking models exist |
+| Database | MongoDB connection awaited before listening; User, Property, RoomType, DailyInventory, Booking, and Inquiry models exist |
 | Registration | Mounted; account creation and OTP email exist, validation and authorization incomplete |
 | Password reset | Mounted; hashed tokens, 15-minute expiry, atomic consumption, SMTP cleanup |
 | Login | Mounted; signs one-hour JWTs |
@@ -15,7 +15,7 @@ This is a source-based inventory, not evidence of deployment or successful runti
 | Authentication and roles | `protect` attaches the user before continuing and rejects blocked users; `authorizeRoles` unattached |
 | Uploads | Avatar uploads integrated with Multer memory storage, Streamifier, and Cloudinary; no size/type limits or asset cleanup |
 | Realtime | Socket.io installed; no initialization or events |
-| Accommodation and roommates | Accommodation, room type, daily inventory, and booking schemas exist; reservation logic, APIs, UI, and roommate models are absent |
+| Accommodation and roommates | Accommodation, room type, daily inventory, booking, and inquiry schemas exist; reservation logic, inquiry workflows, APIs, UI, and roommate models are absent |
 | Verification tooling | Package lint/format scripts; client build; focused accommodation schema tests; no test scripts or server typecheck script |
 | Deployment | No deployment workflow documented or verified |
 
