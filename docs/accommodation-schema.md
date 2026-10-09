@@ -1,6 +1,6 @@
 # Accommodation schema
 
-This is the persistence design. Booking APIs, payments, inventory initialization,
+This is the persistence design. Booking APIs, inquiry messaging, payments, inventory initialization,
 reservation transactions, and cancellation logic are not implemented yet.
 
 ## Relationships
@@ -12,6 +12,8 @@ erDiagram
     RoomType ||--o{ DailyInventory : has
     User ||--o{ Booking : makes
     RoomType ||--o{ Booking : reserves
+    User ||--o{ Inquiry : "buyer / manager"
+    Property ||--o{ Inquiry : targets
 
     Property {
         ObjectId manager FK
@@ -48,6 +50,12 @@ erDiagram
         int guests
         object priceBreakdown
         string status
+    }
+    Inquiry {
+        ObjectId property FK
+        ObjectId buyer FK
+        ObjectId manager FK
+        boolean isRead
     }
 ```
 
@@ -93,6 +101,8 @@ The saved price is independent of later changes to RoomType.nightlyPrice.
 - Booking status is confirmed or cancelled. Payment status is not modeled yet.
 - DailyInventory has a unique database index on roomType + date. A missing inventory
   row does not imply availability; the application must initialize and handle it.
+- Inquiry connects a prospective buyer (`User`), a property manager (`User`), and a target `Property`.
+  `isRead` defaults to `false`. Inquiry endpoints and messaging flows are not yet implemented.
 
 ## Why timezone is stored on the property
 
