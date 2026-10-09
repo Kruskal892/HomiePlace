@@ -1,6 +1,6 @@
 # HomiePlace coding standards
 
-These are implementation rules, not claims that every feature exists. See [architecture](architecture.md) for the current baseline.
+These are implementation rules, not claims that every feature exists. See [architecture](architecture/system-overview.md) for the current baseline.
 
 ## Client
 

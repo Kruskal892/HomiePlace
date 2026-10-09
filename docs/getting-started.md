@@ -55,7 +55,7 @@ not a claim that this documentation change ran the applications.
 
 ## Before your first change
 
-Read [Architecture](architecture.md), [Coding standards](coding-standards.md), and
+Read [Architecture](architecture/system-overview.md), [Coding standards](coding-standards.md), and
 [Development workflow](development.md). Install the recommended VS Code Prettier and ESLint
 extensions. Check [Implementation status](implementation-status.md) before assuming an auth
 flow, frontend page, upload, or socket feature is available.

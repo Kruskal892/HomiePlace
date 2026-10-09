@@ -5,59 +5,7 @@ reservation transactions, and cancellation logic are not implemented yet.
 
 ## Relationships
 
-```mermaid
-erDiagram
-    User ||--o{ Property : manages
-    Property ||--o{ RoomType : offers
-    RoomType ||--o{ DailyInventory : has
-    User ||--o{ Booking : makes
-    RoomType ||--o{ Booking : reserves
-    User ||--o{ Inquiry : "buyer / manager"
-    Property ||--o{ Inquiry : targets
-
-    Property {
-        ObjectId manager FK
-        string title
-        string propertyType
-        object address
-        string timezone
-        number areaSize
-        string_array viewedBy
-        string status
-    }
-    RoomType {
-        ObjectId property FK
-        string name
-        int maxGuests
-        int beds
-        int bathrooms
-        int totalUnits
-        int nightlyPrice
-        string currency
-        boolean isActive
-    }
-    DailyInventory {
-        ObjectId roomType FK
-        string date
-        int remainingUnits
-    }
-    Booking {
-        ObjectId guest FK
-        ObjectId roomType FK
-        string checkIn
-        string checkOut
-        int quantity
-        int guests
-        object priceBreakdown
-        string status
-    }
-    Inquiry {
-        ObjectId property FK
-        ObjectId buyer FK
-        ObjectId manager FK
-        boolean isRead
-    }
-```
+See the [schema relationship diagram](database-schema.md#schema-relationships).
 
 The arrows describe intended relationships. MongoDB references do not enforce that
 related documents exist; future controllers must check them. All models have timestamps.
@@ -130,16 +78,7 @@ not that it matches the supplied address.
 
 ## Safe reservation flow still to implement
 
-```mermaid
-flowchart TD
-    A[Guest requests dates and rooms] --> B[Validate guest, property, capacity and dates]
-    B --> C[Read server price and start MongoDB transaction]
-    C --> D[For each occupied night decrement only if remainingUnits >= quantity]
-    D --> E{All nights reserved?}
-    E -- No --> F[Abort transaction and report unavailable]
-    E -- Yes --> G[Create booking with saved price]
-    G --> H[Commit transaction]
-```
+See the [proposed reservation flow diagram](../flows/reservation.md).
 
 Schema validation alone does not prevent double bookings. Conditional inventory updates
 and booking creation must share one transaction on a replica set or sharded MongoDB

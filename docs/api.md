@@ -3,6 +3,9 @@
 Local base URL: `http://localhost:5000`. [server/server.ts](../server/server.ts) mounts
 [authRouter](../server/routes/auth.routes.ts) at `/api/auth` and
 [userRouter](../server/routes/user.routes.ts) at `/api/users`.
+
+For visual walkthroughs, see the [authentication flows](flows/README.md)
+and [profile update flow](flows/profile-update.md). Request contracts remain in this guide.
 JSON requests use `Content-Type: application/json`; the parser limits bodies to 10 KB.
 Profile reads without an ID and profile updates use `protect`. Public profile lookup and the remaining auth routes do not use authentication middleware. The JSON size limit does not apply to multipart uploads.
 

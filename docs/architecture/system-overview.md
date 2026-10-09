@@ -9,6 +9,7 @@ flowchart LR
   Caller[Postman or HTTP caller] --> Server
   Server --> MongoDB[(MongoDB)]
   Server --> Gmail[Gmail SMTP]
+  Server --> Cloudinary[Cloudinary avatar uploads]
 ```
 
 The client currently makes no backend requests. The root package orchestrates development
@@ -28,6 +29,8 @@ use the User model and utility functions directly; no service or repository laye
 | `server/utils/` | Email, email validation, trusted links, and utility exports |
 | `server/utils/templates/` | Verification email HTML and template exports |
 | `docs/` | Shared developer reference |
+| `docs/architecture/` | System design, schema relationships, and persistence rules |
+| `docs/flows/` | Top-down charts for current flows and explicitly labeled designs |
 | `.agent/` | Agent overview and links to shared guides |
 
 ## Source layout and runtime
@@ -42,164 +45,21 @@ Each package has its own npm manifest and lockfile. The private root package use
 
 ## Mounted routes
 
-| Method | Path | Behavior |
-| --- | --- | --- |
-| GET | `/` | Returns `Hello World` |
-| POST | `/api/auth/register` | Runs registration and sends a verification OTP; validation and role authorization remain unfinished |
-| POST | `/api/auth/login` | Checks credentials and account flags, then signs a one-hour JWT |
-| POST | `/api/auth/verify-email` | Compares the OTP and marks the account verified |
-| GET | `/api/auth/profile` | Uses `protect`; returns the user-module selected profile fields |
-| GET | `/api/users/profile` | Protected selected profile fields |
-| PUT | `/api/users/profile` | Protected profile update and optional avatar upload |
-| GET | `/api/users/profile/:id` | Public selected profile fields by MongoDB ID |
-| POST | `/api/auth/forgot-password` | Accepts an email and processes reset delivery in the current process |
-| POST | `/api/auth/reset-password/:token` | Consumes a valid token and replaces the password hash |
+The server mounts `authRouter` at `/api/auth` and `userRouter` at `/api/users`, plus
+`GET /` for the plain-text health response. See the [API reference](../api.md) for the
+endpoint table, request bodies, responses, and manual checks. Exporting a controller
+does not mount a route.
 
-## Execution flow diagrams
+## Request flows
 
-### 1. Registration and email verification
+- [Registration, email verification, login, and password reset](../flows/README.md)
+- [Profile updates and avatar uploads](../flows/profile-update.md)
+- [Accommodation relationships](database-schema.md#schema-relationships)
+- [Proposed reservation flow](../flows/reservation.md)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Server as Express Server
-    participant DB as MongoDB (User)
-    participant SMTP as Gmail (Nodemailer)
-
-    Note over Client,SMTP: Step 1: User Registration
-    Client->>Server: POST /api/auth/register { name, email, password, role }
-    Server->>Server: Validate email syntax (isValidEmail)
-    Server->>DB: Check existing email (findOne)
-    alt User already exists
-        DB-->>Server: User record found
-        Server-->>Client: 400 "User already exists"
-    else User is new
-        Server->>Server: Hash password (bcrypt) & generate 6-digit OTP
-        Server->>DB: User.create({ ..., isVerified: false, verificationToken: OTP })
-        DB-->>Server: User created
-        Server->>SMTP: sendEmail(OTP verification template)
-        alt SMTP failure
-            Server-->>Client: 500 "Error sending verification email"
-        else SMTP success
-            Server-->>Client: 201 Created { message, user: { email, name, role } }
-        end
-    end
-
-    Note over Client,SMTP: Step 2: Email Verification
-    Client->>Server: POST /api/auth/verify-email { email, otp }
-    Server->>DB: User.findOne({ email })
-    alt OTP matches
-        Server->>DB: Update isVerified: true, clear verificationToken
-        Server-->>Client: 200 OK { message: "Email verified successfully" }
-    else Invalid OTP or User missing
-        Server-->>Client: 400 or 404 Error
-    end
-```
-
-### 2. Login and protected route authorization
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Server as Express Server
-    participant DB as MongoDB (User)
-
-    Note over Client,DB: Login Phase
-    Client->>Server: POST /api/auth/login { email, password }
-    Server->>DB: User.findOne({ email })
-    alt User not found or unverified
-        Server-->>Client: 400 Invalid credentials or 403 Unverified
-    else User exists
-        Server->>Server: Compare password (bcrypt.compare)
-        alt Password mismatch or user.isBlocked
-            Server-->>Client: 400 Invalid credentials or 403 Account blocked
-        else Valid credentials
-            Server->>Server: Sign 1h JWT { id, role } via JWT_SECRET
-            Server-->>Client: 200 OK { token }
-        end
-    end
-
-    Note over Client,DB: Protected Route Access (e.g. GET /api/users/profile)
-    Client->>Server: Request with Header: Authorization: Bearer <token>
-    Server->>Server: protect middleware: Verify JWT
-    Server->>DB: User.findById(decoded.id)
-    alt Token invalid, user missing, or user.isBlocked
-        Server-->>Client: 401 Not authorized or 403 Blocked
-    else Authorized
-        Server->>Server: req.user = { id, role, isBlocked }
-        Server->>DB: Query selected profile fields
-        Server-->>Client: 200 OK { success: true, user }
-    end
-```
-
-### 3. Password reset flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Server as Express Server
-    participant DB as MongoDB (User)
-    participant SMTP as Gmail (Nodemailer)
-
-    Note over Client,SMTP: 1. Request Password Reset
-    Client->>Server: POST /api/auth/forgot-password { email }
-    Server->>Server: Validate email & CLIENT_URL configuration
-    Server-->>Client: 202 Accepted (blind acknowledgement)
-    Server->>Server: Generate random 20-byte token & compute SHA-256 hash
-    Server->>DB: Atomic update: store tokenHash & 15-min expiry
-    alt Account exists in DB
-        Server->>SMTP: sendEmail(reset link with raw token)
-        alt SMTP Delivery Fails
-            Server->>DB: Clear token fields if hash still matches
-        end
-    end
-
-    Note over Client,SMTP: 2. Reset Password Submission
-    Client->>Server: POST /api/auth/reset-password/:token { password, confirmPassword }
-    Server->>Server: Validate token hex format & password requirements
-    Server->>Server: Compute SHA-256 hash of token & hash new password (bcrypt)
-    Server->>DB: Atomic findOneAndUpdate (match tokenHash & expiry > now)
-    alt Token valid and unexpired
-        DB-->>Server: Password updated, token fields removed
-        Server-->>Client: 200 OK "Password updated"
-    else Invalid or expired token
-        Server-->>Client: 400 "Invalid, expired, or used token"
-    end
-```
-
-### 4. Profile update and avatar upload
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Middleware as Multer & Protect
-    participant Controller as User Controller
-    participant Cloudinary as Cloudinary API
-    participant DB as MongoDB (User)
-
-    Client->>Middleware: PUT /api/users/profile (multipart/form-data: name, phone, address, avatar file / removeAvatar)
-    Middleware->>Middleware: protect: verify JWT Bearer token
-    Middleware->>Middleware: Multer: buffer avatar into memory
-    Middleware->>Controller: Forward request with req.user and req.file
-    Controller->>Controller: Validate textual fields & memory buffer
-    Controller->>DB: User.findById(req.user.id)
-
-    alt File uploaded in req.file
-        Controller->>Cloudinary: uploadToCloudinary(stream buffer)
-        Cloudinary-->>Controller: secure_url
-        Controller->>Controller: user.avatar = secure_url
-    else removeAvatar === "true"
-        Controller->>Controller: user.avatar = null
-    end
-
-    Controller->>DB: user.save()
-    DB-->>Controller: Updated document
-    Controller-->>Client: 200 OK { success: true, user }
-```
+Request flowcharts live in [flows/](../flows/README.md); system and relationship
+diagrams stay with the architecture guides. The reservation flow is planned; auth
+and profile charts describe mounted backend handlers.
 
 ## Password-reset flow
 
@@ -225,5 +85,5 @@ Login checks password and account flags and signs a one-hour JWT using `JWT_SECR
 
 Profile updates run `protect`, then `upload.single("avatar")` using Multer memory storage. The user controller validates optional name, phone, and address fields, uploads a supplied buffer through Streamifier to Cloudinary, and saves its secure URL. `removeAvatar` clears the URL only for the exact string `"true"` when no file is supplied. Public lookup validates the ID and selects name, avatar, role, and creation time. Upload size/type limits and Cloudinary asset cleanup are absent. Socket.io remains installed but unintegrated.
 
-See [API reference](api.md) for contracts, [Data model](data-model.md) for persistence,
-and [Implementation status](implementation-status.md) for specific integration gaps.
+See [API reference](../api.md) for contracts, [Data model](database-schema.md) for persistence,
+and [Implementation status](../implementation-status.md) for specific integration gaps.

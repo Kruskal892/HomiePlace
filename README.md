@@ -6,7 +6,9 @@ HomiePlace is a full-stack web application for shared housing, room finding, and
 
 New contributors should start with the [developer documentation](docs/README.md), which covers
 setup, architecture, API contracts, the data model, configuration, coding standards,
-development workflow, implementation gaps, and troubleshooting.
+development workflow, implementation gaps, and troubleshooting. Browse the
+[request flows](docs/flows/README.md) for authentication and profile uploads, and the
+[database schema](docs/architecture/database-schema.md) for accommodation relationships.
 
 ## Tech stack
 
@@ -35,8 +37,10 @@ HomiePlace/
     models/            Mongoose schemas
     utils/             Email delivery, templates, client links, validation, and uploads
     server.ts          Server entry point
-  .agent/              Architecture, coding standards, and workflows
+  .agent/              AI entry points linking to shared developer guides
   docs/                Shared developer documentation and onboarding
+    architecture/      System overview, entity relationships, and accommodation rules
+    flows/             Top-down request flowcharts, one flow per file
   AGENTS.md            AI contributor instructions
   CLAUDE.md            Claude instructions
 ```
@@ -261,7 +265,9 @@ Read the following guides before contributing:
 
 - [Client guide](client/README.md)
 - [Developer documentation index](docs/README.md)
-- [Architecture](docs/architecture.md)
+- [Architecture](docs/architecture/system-overview.md)
+- [Request flows](docs/flows/README.md)
+- [Data model and accommodation rules](docs/architecture/database-schema.md)
 - [Coding standards](docs/coding-standards.md)
 - [Development workflows](docs/development.md)
 

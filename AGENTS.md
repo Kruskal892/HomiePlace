@@ -7,11 +7,21 @@ Read these guides before proposing or changing code:
 - [Coding standards](.agent/coding-standards.md)
 - [Workflows and environment](.agent/workflows.md)
 
-## Current baseline and constraints
+## Shared project reference
 
-- Client: React 19, TypeScript, Vite 8, Tailwind v4, and BrowserRouter around a placeholder.
-- Server: TypeScript executed directly by Node.js, ESM, Express 5, and Mongoose. The entry is `server/server.ts`; `GET /`, registration, and the forgot/reset-password POST endpoints are mounted.
-- Registration is mounted at `POST /api/auth/register` but remains unfinished. Login, verification, and protected profile reads are mounted. `PUT /api/users/profile` supports profile updates and Cloudinary avatar uploads; `GET /api/users/profile/:id` exposes selected public fields. Role middleware remains unattached, and Socket.io is not integrated.
+Use [docs/README.md](docs/README.md) as the documentation index.
+Read [Architecture](docs/architecture/system-overview.md) and
+[Implementation status](docs/implementation-status.md) for the current baseline;
+verify relevant claims against source before changing behavior.
+
+System and schema diagrams live in `docs/architecture/`. Request charts live in
+[docs/flows/](docs/flows/README.md), one top-down flow per file with labeled decisions.
+When behavior changes, update the relevant API, data model, configuration, status, and
+diagram guides. Follow the [documentation ownership rules](docs/README.md#documentation-ownership)
+and keep implementation details in shared docs rather than duplicating them here.
+
+## Constraints
+
 - Use TypeScript and import/export; never CommonJS or client `any`.
 - Keep client/server code and npm commands within their respective packages.
 - Never stage or commit node_modules, local environment files, credentials, or build output.

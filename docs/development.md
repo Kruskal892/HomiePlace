@@ -69,6 +69,10 @@ Both packages use ESLint flat configurations with recommended JavaScript/TypeScr
 3. For frontend changes, reuse BrowserRouter and Tailwind, and check keyboard interaction,
    responsive layouts, loading states, and errors when adding real screens.
 4. Update the API, schema, environment, and status guides when their behavior changes.
+   Follow the [documentation ownership rules](README.md#documentation-ownership): keep
+   system/schema diagrams in `architecture/` and request charts in [flows/](flows/README.md).
+   Update affected diagrams and maintain shared references rather than copying status
+   into AI instructions.
 5. Perform only the checks appropriate to the task and authorized in the session. Report
    commands run, outcomes, and any runtime or browser checks still outstanding.
 6. Review the diff and status before handing off; keep generated files and secrets out of Git.

@@ -1,7 +1,68 @@
-# Data model
+# Database schema
+
+## Schema relationships
+
+```mermaid
+erDiagram
+    User ||--o{ Property : manages
+    Property ||--o{ RoomType : offers
+    RoomType ||--o{ DailyInventory : has
+    User ||--o{ Booking : makes
+    RoomType ||--o{ Booking : reserves
+    User ||--o{ Inquiry : "buyer / manager"
+    Property ||--o{ Inquiry : targets
+
+    Property {
+        ObjectId manager FK
+        string title
+        string propertyType
+        object address
+        string timezone
+        number areaSize
+        string_array viewedBy
+        string status
+    }
+    RoomType {
+        ObjectId property FK
+        string name
+        int maxGuests
+        int beds
+        int bathrooms
+        int totalUnits
+        int nightlyPrice
+        string currency
+        boolean isActive
+    }
+    DailyInventory {
+        ObjectId roomType FK
+        string date
+        int remainingUnits
+    }
+    Booking {
+        ObjectId guest FK
+        ObjectId roomType FK
+        string checkIn
+        string checkOut
+        int quantity
+        int guests
+        object priceBreakdown
+        string status
+    }
+    Inquiry {
+        ObjectId property FK
+        ObjectId buyer FK
+        ObjectId manager FK
+        boolean isRead
+    }
+```
+
+References describe intended relationships; MongoDB does not enforce that related
+documents exist. All models have timestamps.
+
+## User model
 
 The user model is `User`, defined in
-[server/models/user.model.ts](../server/models/user.model.ts) and exported as a named value
+[server/models/user.model.ts](../../server/models/user.model.ts) and exported as a named value
 through `#models`. MongoDB persistence uses Mongoose; no migration or seed script exists.
 
 | Field | Type | Constraint or default |
@@ -62,8 +123,8 @@ areaSize and viewedBy are present in the current schema. Existing draft-shaped
 documents, if stored externally, need migration before use; no migration is run here.
 
 Room capacity, inventory, nightly pricing/currency, and saved reservations are modeled
-by RoomType, DailyInventory, and Booking. See [the accommodation diagram and field
-rules](accommodation-schema.md). Property also requires a valid timezone.
+by RoomType, DailyInventory, and Booking. See the [relationship diagram](database-schema.md#schema-relationships)
+and [accommodation field rules](accommodation-schema.md). Property also requires a valid timezone.
 See [why the property needs a timezone](accommodation-schema.md#why-timezone-is-stored-on-the-property)
 for local stay dates, check-in times, and booking cutoffs.
 No property API or booking flow exists yet.
@@ -76,7 +137,7 @@ Run the database-free validation checks from `server/`:
 
 ## Inquiry model
 
-`Inquiry` is defined in [server/models/inquiry.model.ts](../server/models/inquiry.model.ts) and exported through `#models`.
+`Inquiry` is defined in [server/models/inquiry.model.ts](../../server/models/inquiry.model.ts) and exported through `#models`.
 It records inquiries submitted by prospective buyers or tenants for a specific property.
 
 | Field | Type | Constraint or default |

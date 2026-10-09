@@ -5,17 +5,16 @@ Read this overview and all three guides before proposing or changing code.
 The guides below link to the shared [developer documentation](../docs/README.md).
 Maintain project details in `docs/` so developers and agents use the same reference.
 
-## Current baseline
+## Shared project reference
 
-- `client/`: React 19, TypeScript, Vite 8, Tailwind v4, and React Router v7. BrowserRouter wraps a placeholder.
-- `server/`: TypeScript, Node ESM, Express 5, and Mongoose 9. `GET /`, registration, and the forgot/reset-password POST endpoints are mounted.
-- Registration is mounted at `POST /api/auth/register`, but boundary validation and role authorization remain unfinished.
-- Registration is mounted at `POST /api/auth/register` but remains unfinished. Login, verification, and protected profile reads are mounted. `PUT /api/users/profile` supports profile updates and Cloudinary avatar uploads; `GET /api/users/profile/:id` exposes selected public fields. Role middleware remains unattached, and Socket.io is not integrated.
-- Each package has its own npm manifest and lockfile; the root package runs both development scripts through concurrently.
+Use [Architecture](../docs/architecture/system-overview.md) for source ownership and runtime behavior,
+[Implementation status](../docs/implementation-status.md) for existing features and gaps,
+and [Request flows](../docs/flows/README.md) for visual walkthroughs. Verify
+relevant claims against the source rather than treating documentation as runtime evidence.
 
 ## Required guides
 
-1. [Architecture](architecture.md): actual files, data flow, and implementation gaps.
+1. [Architecture and implementation status](architecture.md): actual files, data flow, and implementation gaps.
 2. [Coding standards](coding-standards.md): client/server conventions and security boundaries.
 3. [Workflows](workflows.md): commands, environment variables, and verification.
 
@@ -29,3 +28,11 @@ Maintain project details in `docs/` so developers and agents use the same refere
 6. Keep UI accessible, responsive, and consistent with the existing Tailwind v4 setup.
 7. Do not run lint or build unless explicitly requested. Report only checks actually performed.
 8. Distinguish installed dependencies, unfinished code, and working features.
+
+## Maintaining documentation
+
+Follow the [documentation ownership rules](../docs/README.md#documentation-ownership).
+Keep design and schema docs in `docs/architecture/` and one top-down request chart per
+file in `docs/flows/`. Keep these AI guides focused on instructions and links. Update
+affected guides and diagrams with behavior changes; label proposed flows and record
+only checks actually performed.
